@@ -1,6 +1,7 @@
 /* ======================================================
    app.js — メインコントローラー
-   6ステップ入力 → プログラム生成 → 結果表示
+   7ステップ入力 → プログラム生成 → 結果表示
+   i18n対応 / 期間3段階 / 治療複数選択 / イラスト / 言語切替
    ====================================================== */
 
 'use strict';
@@ -8,24 +9,24 @@
 (function () {
 
   var app = document.getElementById('app');
-  var step = 0; // 0=intro, 1=基本, 2=カーブ, 3=骨成熟, 4=合併症, 5=確認, 6=結果
+  // 0=intro, 1=基本, 2=期間, 3=カーブ, 4=骨成熟+治療, 5=合併症, 6=確認, 7=結果
+  var step = 0;
   var history = [];
 
-  // 入力データ
   var input = {
     age: null,
     sex: null,
+    duration: null,     // short/medium/long
     cobbAngle: 25,
     curveType: null,
     risser: null,
-    treatment: null,
+    treatment: [],      // 複数選択
     complications: []
   };
 
   var generatedProgram = null;
 
   // ── レンダリング ─────────────────────
-
   function render() {
     switch (step) {
       case 0: renderIntro(); break;
@@ -34,7 +35,8 @@
       case 3: renderStep3(); break;
       case 4: renderStep4(); break;
       case 5: renderStep5(); break;
-      case 6: renderResult(); break;
+      case 6: renderStep6(); break;
+      case 7: renderResult(); break;
     }
     animateIn();
   }
@@ -48,24 +50,11 @@
     }
   }
 
-  function goNext() {
-    history.push(step);
-    step++;
-    render();
-  }
+  function goNext() { history.push(step); step++; render(); }
+  function goBack() { if (history.length > 0) step = history.pop(); render(); }
+  function goToStep(s) { history.push(step); step = s; render(); }
 
-  function goBack() {
-    if (history.length > 0) {
-      step = history.pop();
-    }
-    render();
-  }
-
-  function goToStep(s) {
-    history.push(step);
-    step = s;
-    render();
-  }
+  var t = function (k) { return I18N.t(k); };
 
   function progressBar(current, total) {
     var pct = Math.round((current / total) * 100);
@@ -77,77 +66,89 @@
 
   function navArea(showNext, nextDisabled) {
     var html = '<div class="nav-area">';
-    html += '<button class="btn-back" data-action="back">\u2190 \u623B\u308B</button>';
+    html += '<button class="btn-back" data-action="back">' + t('back') + '</button>';
     if (showNext) {
       html += '<button class="btn-primary" data-action="next"' +
         (nextDisabled ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') +
-        '>\u6B21\u3078 \u2192</button>';
+        '>' + t('next') + '</button>';
     }
     html += '</div>';
     return html;
   }
 
-  // ── Step 0: イントロ ──────────────────
+  function langSwitcher() {
+    var langs = I18N.langs();
+    var cur = I18N.getLang();
+    var html = '<div class="lang-switcher">';
+    langs.forEach(function (l) {
+      var sel = l.code === cur ? ' active' : '';
+      html += '<button class="lang-btn' + sel + '" data-lang="' + l.code + '">' + l.label + '</button>';
+    });
+    html += '</div>';
+    return html;
+  }
 
-  function renderIntro() {
-    app.className = '';
-    app.innerHTML =
-      '<div class="intro-screen fade-in">' +
-        '<div class="intro-icon">\uD83E\uDDB4</div>' +
-        '<h1 class="intro-title">\u5074\u5F2A\u75C7\u30EA\u30CF\u30D3\u30EA\u30D7\u30ED\u30B0\u30E9\u30E0<br>\u30B8\u30A7\u30CD\u30EC\u30FC\u30BF\u30FC</h1>' +
-        '<p class="intro-subtitle">' +
-          '\u60A3\u8005\u60C5\u5831\u3092\u5165\u529B\u3059\u308B\u3068\u3001Schroth\u6CD5\u30FBSEAS\u3092\u4E2D\u5FC3\u3068\u3057\u305F<br>' +
-          '\u6700\u592736\u30F6\u6708\u9593\u306E\u30D5\u30A7\u30FC\u30BA\u5225\u904B\u52D5\u7642\u6CD5\u30D7\u30ED\u30B0\u30E9\u30E0\u3092<br>' +
-          '\u81EA\u52D5\u751F\u6210\u3057\u307E\u3059\u3002' +
-        '</p>' +
-        '<div class="intro-features">' +
-          '<ul>' +
-            '<li>SOSORT 2016\u30AC\u30A4\u30C9\u30E9\u30A4\u30F3\u6E96\u62E0\u306E\u30EA\u30B9\u30AF\u5206\u985E</li>' +
-            '<li>40\u7A2E\u4EE5\u4E0A\u306E\u30A8\u30D3\u30C7\u30F3\u30B9\u30D9\u30FC\u30B9\u904B\u52D5\u30E1\u30CB\u30E5\u30FC</li>' +
-            '<li>\u30D5\u30A7\u30FC\u30BA\u5225\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3\u8868\u793A</li>' +
-            '<li>\u8A55\u4FA1\u30B9\u30B1\u30B8\u30E5\u30FC\u30EB\u30FB\u88C5\u5177\u6307\u5C0E\u30FB\u5FC3\u7406\u30B5\u30DD\u30FC\u30C8</li>' +
-            '<li>\u5370\u5237\u5BFE\u5FDC\u306E\u30D7\u30ED\u30B0\u30E9\u30E0\u51FA\u529B</li>' +
-          '</ul>' +
-        '</div>' +
-        '<div class="disclaimer-box">' +
-          '<p>\u26A0 \u672C\u30C4\u30FC\u30EB\u306F\u6559\u80B2\u30FB\u30C7\u30E2\u76EE\u7684\u3067\u3059\u3002\u5B9F\u969B\u306E\u6CBB\u7642\u306F\u5FC5\u305A\u5074\u5F2A\u75C7\u5C02\u9580\u306E\u533B\u5E2B\u30FB\u7406\u5B66\u7642\u6CD5\u58EB\u306E\u6307\u5C0E\u306E\u3082\u3068\u3067\u884C\u3063\u3066\u304F\u3060\u3055\u3044\u3002</p>' +
-        '</div>' +
-        '<button class="btn-primary" data-action="start">\u306F\u3058\u3081\u308B</button>' +
-      '</div>';
-
-    bindAction('start', function () {
-      step = 1;
-      history = [];
-      render();
+  function bindLangSwitcher() {
+    var btns = app.querySelectorAll('[data-lang]');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        I18N.setLang(this.getAttribute('data-lang'));
+        document.documentElement.lang = I18N.getLang();
+        render();
+      });
     });
   }
 
-  // ── Step 1: 基本情報 ──────────────────
+  // ── Step 0: イントロ ──────────────────
+  function renderIntro() {
+    app.className = '';
+    var titleLines = t('title').split('\n');
+    app.innerHTML =
+      '<div class="intro-screen fade-in">' +
+        langSwitcher() +
+        '<div class="intro-icon">\uD83E\uDDB4</div>' +
+        '<h1 class="intro-title">' + titleLines.join('<br>') + '</h1>' +
+        '<p class="intro-subtitle">' + t('intro_sub').replace(/\n/g, '<br>') + '</p>' +
+        '<div class="intro-features"><ul>' +
+          '<li>' + t('feat1') + '</li>' +
+          '<li>' + t('feat2') + '</li>' +
+          '<li>' + t('feat3') + '</li>' +
+          '<li>' + t('feat4') + '</li>' +
+          '<li>' + t('feat5') + '</li>' +
+        '</ul></div>' +
+        '<div class="disclaimer-box"><p>' + t('disclaimer') + '</p></div>' +
+        '<button class="btn-primary" data-action="start">' + t('start') + '</button>' +
+      '</div>';
 
+    bindLangSwitcher();
+    bindAction('start', function () { step = 1; history = []; render(); });
+  }
+
+  // ── Step 1: 基本情報 ──────────────────
   function renderStep1() {
     app.className = '';
     var ageVal = input.age || '';
-    var html =
+    app.innerHTML =
       '<div class="step-screen fade-in">' +
-        progressBar(1, 5) +
-        '<h2 class="step-title">\u57FA\u672C\u60C5\u5831</h2>' +
-        '<p class="step-subtitle">\u60A3\u8005\u306E\u5E74\u9F62\u3068\u6027\u5225\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>' +
+        langSwitcher() +
+        progressBar(1, 6) +
+        '<h2 class="step-title">' + t('s1_title') + '</h2>' +
+        '<p class="step-subtitle">' + t('s1_sub') + '</p>' +
         '<div class="form-group">' +
-          '<label class="form-label">\u5E74\u9F62</label>' +
-          '<input type="number" class="form-input" id="age-input" placeholder="\u4F8B: 14" min="5" max="80" value="' + ageVal + '">' +
+          '<label class="form-label">' + t('age') + '</label>' +
+          '<input type="number" class="form-input" id="age-input" placeholder="' + t('age_ph') + '" min="5" max="80" value="' + ageVal + '">' +
         '</div>' +
         '<div class="form-group">' +
-          '<label class="form-label">\u6027\u5225</label>' +
+          '<label class="form-label">' + t('sex') + '</label>' +
           '<div class="options-grid-2">' +
-            sexBtn('female', '\u5973\u6027') +
-            sexBtn('male', '\u7537\u6027') +
+            optBtn('sex', 'female', t('female'), '', input.sex === 'female') +
+            optBtn('sex', 'male', t('male'), '', input.sex === 'male') +
           '</div>' +
         '</div>' +
         navArea(true, !input.age || !input.sex) +
       '</div>';
-    app.innerHTML = html;
 
-    // イベント
+    bindLangSwitcher();
     var ageInput = document.getElementById('age-input');
     ageInput.addEventListener('input', function () {
       var v = parseInt(this.value, 10);
@@ -155,45 +156,58 @@
       updateNavState();
     });
 
-    bindSexButtons();
+    bindSelect('sex', function (val) { input.sex = val; });
     bindAction('back', function () { step = 0; history = []; render(); });
     bindAction('next', function () { if (input.age && input.sex) goNext(); });
   }
 
-  function sexBtn(val, label) {
-    var sel = input.sex === val ? ' selected' : '';
-    return '<button class="option-btn' + sel + '" data-sex="' + val + '">' +
-      '<span class="option-title">' + label + '</span>' +
+  // ── Step 2: プログラム期間 ─────────────
+  function renderStep2() {
+    app.className = '';
+    app.innerHTML =
+      '<div class="step-screen fade-in">' +
+        langSwitcher() +
+        progressBar(2, 6) +
+        '<h2 class="step-title">' + t('s2_title') + '</h2>' +
+        '<p class="step-subtitle">' + t('s2_sub') + '</p>' +
+        '<div class="form-group">' +
+          durOption('short', t('dur_short'), t('dur_short_d'), '6') +
+          durOption('medium', t('dur_medium'), t('dur_medium_d'), '18') +
+          durOption('long', t('dur_long'), t('dur_long_d'), '36') +
+        '</div>' +
+        navArea(true, !input.duration) +
+      '</div>';
+
+    bindLangSwitcher();
+    bindSelect('duration', function (val) { input.duration = val; });
+    bindAction('back', goBack);
+    bindAction('next', function () { if (input.duration) goNext(); });
+  }
+
+  function durOption(val, title, desc, months) {
+    var sel = input.duration === val ? ' selected' : '';
+    return '<button class="option-btn dur-option' + sel + '" data-duration="' + val + '">' +
+      '<span class="dur-months">' + months + t('dur_months') + '</span>' +
+      '<span class="option-title">' + title + '</span>' +
+      '<span class="option-desc">' + desc + '</span>' +
     '</button>';
   }
 
-  function bindSexButtons() {
-    var btns = app.querySelectorAll('[data-sex]');
-    btns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        input.sex = this.getAttribute('data-sex');
-        btns.forEach(function (b) { b.classList.remove('selected'); });
-        this.classList.add('selected');
-        updateNavState();
-      });
-    });
-  }
-
-  // ── Step 2: カーブ情報 ─────────────────
-
-  function renderStep2() {
+  // ── Step 3: カーブ情報 ─────────────────
+  function renderStep3() {
     app.className = '';
     var cobb = input.cobbAngle;
     var sev = ProgramEngine.severityBadge(cobb);
-    var html =
+    app.innerHTML =
       '<div class="step-screen fade-in">' +
-        progressBar(2, 5) +
-        '<h2 class="step-title">\u30AB\u30FC\u30D6\u60C5\u5831</h2>' +
-        '<p class="step-subtitle">\u5074\u5F2A\u306ECobb\u89D2\u3068\u30AB\u30FC\u30D6\u30BF\u30A4\u30D7\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>' +
+        langSwitcher() +
+        progressBar(3, 6) +
+        '<h2 class="step-title">' + t('s3_title') + '</h2>' +
+        '<p class="step-subtitle">' + t('s3_sub') + '</p>' +
         '<div class="form-group">' +
-          '<label class="form-label">Cobb\u89D2</label>' +
+          '<label class="form-label">' + t('cobb') + '</label>' +
           '<div class="slider-value" id="cobb-display">' + cobb + '\u00B0</div>' +
-          '<div class="slider-label" id="cobb-severity" style="color:' + sev.color + '">' + sev.label + '</div>' +
+          '<div class="slider-label" id="cobb-severity" style="color:' + sev.color + '">' + t(sev.key) + '</div>' +
           '<div class="slider-container">' +
             '<input type="range" class="form-slider" id="cobb-slider" min="10" max="70" value="' + cobb + '" ' +
               'style="background:linear-gradient(to right,#4CAF50 0%,#4CAF50 16%,#FF9800 16%,#FF9800 42%,#E53935 42%,#E53935 67%,#B71C1C 67%,#B71C1C 100%)">' +
@@ -206,96 +220,72 @@
           '</div>' +
         '</div>' +
         '<div class="form-group">' +
-          '<label class="form-label">\u30AB\u30FC\u30D6\u30BF\u30A4\u30D7</label>' +
-          curveTypeOption('thoracic', '\u80F8\u690E\u30AB\u30FC\u30D6', '\u80F8\u690E\u90E8\u306B\u4E3B\u30AB\u30FC\u30D6') +
-          curveTypeOption('thoracolumbar', '\u80F8\u8170\u690E\u30AB\u30FC\u30D6', '\u80F8\u690E\u3068\u8170\u690E\u306E\u79FB\u884C\u90E8') +
-          curveTypeOption('lumbar', '\u8170\u690E\u30AB\u30FC\u30D6', '\u8170\u690E\u90E8\u306B\u4E3B\u30AB\u30FC\u30D6') +
-          curveTypeOption('double', '\u30C0\u30D6\u30EB\u30AB\u30FC\u30D6\uFF08S\u5B57\u578B\uFF09', '\u80F8\u690E\u3068\u8170\u690E\u306B\u305D\u308C\u305E\u308C\u30AB\u30FC\u30D6') +
+          '<label class="form-label">' + t('curve_type') + '</label>' +
+          optBtn('curve', 'thoracic', t('ct_thoracic'), t('ct_thoracic_d'), input.curveType === 'thoracic') +
+          optBtn('curve', 'thoracolumbar', t('ct_thoracolumbar'), t('ct_thoracolumbar_d'), input.curveType === 'thoracolumbar') +
+          optBtn('curve', 'lumbar', t('ct_lumbar'), t('ct_lumbar_d'), input.curveType === 'lumbar') +
+          optBtn('curve', 'double', t('ct_double'), t('ct_double_d'), input.curveType === 'double') +
         '</div>' +
         navArea(true, !input.curveType) +
       '</div>';
-    app.innerHTML = html;
 
-    // Cobb角スライダー
+    bindLangSwitcher();
     var slider = document.getElementById('cobb-slider');
     slider.addEventListener('input', function () {
       input.cobbAngle = parseInt(this.value, 10);
       var s = ProgramEngine.severityBadge(input.cobbAngle);
       document.getElementById('cobb-display').textContent = input.cobbAngle + '\u00B0';
       var sevEl = document.getElementById('cobb-severity');
-      sevEl.textContent = s.label;
+      sevEl.textContent = t(s.key);
       sevEl.style.color = s.color;
     });
 
-    // カーブタイプ
-    var curveBtns = app.querySelectorAll('[data-curve]');
-    curveBtns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        input.curveType = this.getAttribute('data-curve');
-        curveBtns.forEach(function (b) { b.classList.remove('selected'); });
-        this.classList.add('selected');
-        updateNavState();
-      });
-    });
-
+    bindSelect('curve', function (val) { input.curveType = val; });
     bindAction('back', goBack);
     bindAction('next', function () { if (input.curveType) goNext(); });
   }
 
-  function curveTypeOption(val, title, desc) {
-    var sel = input.curveType === val ? ' selected' : '';
-    return '<button class="option-btn' + sel + '" data-curve="' + val + '">' +
-      '<span class="option-title">' + title + '</span>' +
-      '<span class="option-desc">' + desc + '</span>' +
-    '</button>';
-  }
-
-  // ── Step 3: 骨成熟度・治療状況 ──────────
-
-  function renderStep3() {
+  // ── Step 4: 骨成熟度・治療状況 ──────────
+  function renderStep4() {
     app.className = '';
     var isAdult = input.age >= 18;
     if (isAdult) input.risser = 5;
 
     var html =
       '<div class="step-screen fade-in">' +
-        progressBar(3, 5) +
-        '<h2 class="step-title">\u9AA8\u6210\u719F\u5EA6\u30FB\u6CBB\u7642\u72B6\u6CC1</h2>' +
-        '<p class="step-subtitle">' +
-          (isAdult ? '\u6210\u4EBA\u306E\u305F\u3081Risser\u30B5\u30A4\u30F3\u306F\u81EA\u52D5\u30675\u306B\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u3059\u3002' :
-           'Risser\u30B5\u30A4\u30F3\uFF08\u9AA8\u7AEF\u9AA8\u5316\u5EA6\uFF09\u3068\u73FE\u5728\u306E\u6CBB\u7642\u72B6\u6CC1\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002') +
-        '</p>';
+        langSwitcher() +
+        progressBar(4, 6) +
+        '<h2 class="step-title">' + t('s4_title') + '</h2>' +
+        '<p class="step-subtitle">' + (isAdult ? t('s4_sub_adult') : t('s4_sub')) + '</p>';
 
     if (!isAdult) {
       html +=
         '<div class="form-group">' +
-          '<label class="form-label">Risser\u30B5\u30A4\u30F3</label>' +
+          '<label class="form-label">' + t('risser') + '</label>' +
           '<div class="risser-options">';
       for (var r = 0; r <= 5; r++) {
         var sel = input.risser === r ? ' selected' : '';
         html += '<button class="risser-btn' + sel + '" data-risser="' + r + '">' + r + '</button>';
       }
       html += '</div>' +
-        '<p class="risser-desc">0: \u672A\u9AA8\u5316\uFF08\u6210\u9577\u771F\u3063\u76DB\u308A\uFF09\u3000' +
-        '1-3: \u9AA8\u5316\u9032\u884C\u4E2D\u3000' +
-        '4-5: \u9AA8\u5316\u5B8C\u4E86\u8FD1\u3044\u30FB\u5B8C\u4E86</p>' +
-        '</div>';
+        '<p class="risser-desc">' + t('risser_desc') + '</p></div>';
     }
 
+    // 治療状況（複数選択）
     html +=
       '<div class="form-group">' +
-        '<label class="form-label">\u73FE\u5728\u306E\u6CBB\u7642\u72B6\u6CC1</label>' +
-        treatmentOption('none', '\u6CBB\u7642\u306A\u3057', '\u7D4C\u904E\u89B3\u5BDF\u306E\u307F') +
-        treatmentOption('exercise', '\u904B\u52D5\u7642\u6CD5\u306E\u307F', '\u7406\u5B66\u7642\u6CD5\u58EB\u306E\u6307\u5C0E\u3042\u308A') +
-        treatmentOption('bracing', '\u88C5\u5177\u7642\u6CD5\u4E2D', '\u30B3\u30EB\u30BB\u30C3\u30C8\u7B49\u306E\u88C5\u5177\u3092\u4F7F\u7528') +
-        treatmentOption('postSurgery', '\u624B\u8853\u5F8C', '\u8131\u690E\u56FA\u5B9A\u8853\u5F8C\u306E\u30EA\u30CF\u30D3\u30EA') +
+        '<label class="form-label">' + t('treatment') + '</label>' +
+        treatmentCheckbox('none', t('tx_none'), t('tx_none_d')) +
+        treatmentCheckbox('exercise', t('tx_exercise'), t('tx_exercise_d')) +
+        treatmentCheckbox('bracing', t('tx_bracing'), t('tx_bracing_d')) +
+        treatmentCheckbox('postSurgery', t('tx_post'), t('tx_post_d')) +
       '</div>' +
-      navArea(true, (isAdult ? false : input.risser === null) || !input.treatment) +
+      navArea(true, (isAdult ? false : input.risser === null) || input.treatment.length === 0) +
     '</div>';
 
     app.innerHTML = html;
+    bindLangSwitcher();
 
-    // Risserボタン
     if (!isAdult) {
       var risserBtns = app.querySelectorAll('[data-risser]');
       risserBtns.forEach(function (btn) {
@@ -308,13 +298,28 @@
       });
     }
 
-    // 治療状況ボタン
-    var treatBtns = app.querySelectorAll('[data-treatment]');
+    // 治療チェックボックス
+    var treatBtns = app.querySelectorAll('[data-treat]');
     treatBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
-        input.treatment = this.getAttribute('data-treatment');
-        treatBtns.forEach(function (b) { b.classList.remove('selected'); });
-        this.classList.add('selected');
+        var val = this.getAttribute('data-treat');
+        if (val === 'none') {
+          input.treatment = ['none'];
+          treatBtns.forEach(function (b) { b.classList.remove('checked'); });
+          this.classList.add('checked');
+        } else {
+          input.treatment = input.treatment.filter(function (v) { return v !== 'none'; });
+          var noneBtn = app.querySelector('[data-treat="none"]');
+          if (noneBtn) noneBtn.classList.remove('checked');
+          var idx = input.treatment.indexOf(val);
+          if (idx !== -1) {
+            input.treatment.splice(idx, 1);
+            this.classList.remove('checked');
+          } else {
+            input.treatment.push(val);
+            this.classList.add('checked');
+          }
+        }
         updateNavState();
       });
     });
@@ -322,50 +327,53 @@
     bindAction('back', goBack);
     bindAction('next', function () {
       var risserOk = isAdult || input.risser !== null;
-      if (risserOk && input.treatment) goNext();
+      if (risserOk && input.treatment.length > 0) goNext();
     });
   }
 
-  function treatmentOption(val, title, desc) {
-    var sel = input.treatment === val ? ' selected' : '';
-    return '<button class="option-btn' + sel + '" data-treatment="' + val + '">' +
-      '<span class="option-title">' + title + '</span>' +
-      '<span class="option-desc">' + desc + '</span>' +
+  function treatmentCheckbox(val, title, desc) {
+    var checked = input.treatment.indexOf(val) !== -1 ? ' checked' : '';
+    return '<button class="checkbox-btn' + checked + '" data-treat="' + val + '">' +
+      '<span class="checkbox-icon">\u2713</span>' +
+      '<div class="checkbox-content">' +
+        '<span class="checkbox-text">' + title + '</span>' +
+        '<span class="checkbox-desc">' + desc + '</span>' +
+      '</div>' +
     '</button>';
   }
 
-  // ── Step 4: 合併症 ────────────────────
-
-  function renderStep4() {
+  // ── Step 5: 合併症 ────────────────────
+  function renderStep5() {
     app.className = '';
     var items = [
-      { val: 'pain', label: '\u75DB\u307F\uFF08\u8170\u80CC\u90E8\u75DB\uFF09' },
-      { val: 'respiratory', label: '\u547C\u5438\u6A5F\u80FD\u4F4E\u4E0B' },
-      { val: 'appearance', label: '\u5916\u898B\u306E\u5909\u5316\u3078\u306E\u6C17\u304C\u304B\u308A' },
-      { val: 'psycho', label: '\u5FC3\u7406\u7684\u30B9\u30C8\u30EC\u30B9\u30FB\u4E0D\u5B89' },
-      { val: 'adl', label: 'ADL\uFF08\u65E5\u5E38\u751F\u6D3B\u52D5\u4F5C\uFF09\u306E\u5236\u9650' },
-      { val: 'none', label: '\u7279\u306B\u306A\u3057' }
+      { val: 'pain', key: 'comp_pain' },
+      { val: 'respiratory', key: 'comp_resp' },
+      { val: 'appearance', key: 'comp_appear' },
+      { val: 'psycho', key: 'comp_psycho' },
+      { val: 'adl', key: 'comp_adl' },
+      { val: 'none', key: 'comp_none' }
     ];
 
     var html =
       '<div class="step-screen fade-in">' +
-        progressBar(4, 5) +
-        '<h2 class="step-title">\u5408\u4F75\u75C7\u30FB\u304A\u56F0\u308A\u3054\u3068</h2>' +
-        '<p class="step-subtitle">\u5F53\u3066\u306F\u307E\u308B\u3082\u306E\u3092\u3059\u3079\u3066\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>' +
+        langSwitcher() +
+        progressBar(5, 6) +
+        '<h2 class="step-title">' + t('s5_title') + '</h2>' +
+        '<p class="step-subtitle">' + t('s5_sub') + '</p>' +
         '<div class="checkbox-group">';
 
     items.forEach(function (item) {
       var checked = input.complications.indexOf(item.val) !== -1 ? ' checked' : '';
       html += '<button class="checkbox-btn' + checked + '" data-comp="' + item.val + '">' +
         '<span class="checkbox-icon">\u2713</span>' +
-        '<span class="checkbox-text">' + item.label + '</span>' +
+        '<span class="checkbox-text">' + t(item.key) + '</span>' +
       '</button>';
     });
 
     html += '</div>' + navArea(true, false) + '</div>';
     app.innerHTML = html;
+    bindLangSwitcher();
 
-    // チェックボックスロジック
     var compBtns = app.querySelectorAll('[data-comp]');
     compBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -375,11 +383,9 @@
           compBtns.forEach(function (b) { b.classList.remove('checked'); });
           this.classList.add('checked');
         } else {
-          // 「なし」を解除
           input.complications = input.complications.filter(function (c) { return c !== 'none'; });
           var noneBtn = app.querySelector('[data-comp="none"]');
           if (noneBtn) noneBtn.classList.remove('checked');
-
           var idx = input.complications.indexOf(val);
           if (idx !== -1) {
             input.complications.splice(idx, 1);
@@ -396,42 +402,43 @@
     bindAction('next', goNext);
   }
 
-  // ── Step 5: 確認画面 ──────────────────
-
-  function renderStep5() {
+  // ── Step 6: 確認画面 ──────────────────
+  function renderStep6() {
     app.className = '';
     var sev = ProgramEngine.severityBadge(input.cobbAngle);
+    var durLabel = t('dur_' + input.duration) + ' (' + (ProgramEngine.DURATION_MONTHS[input.duration] || 36) + t('dur_months') + ')';
+    var treatLabels = input.treatment.map(function (v) { return t(ProgramEngine.treatmentLabelKey(v)); }).join(', ');
     var compLabels = {
-      pain: '\u75DB\u307F', respiratory: '\u547C\u5438\u6A5F\u80FD\u4F4E\u4E0B',
-      appearance: '\u5916\u898B\u306E\u5909\u5316', psycho: '\u5FC3\u7406\u7684\u30B9\u30C8\u30EC\u30B9',
-      adl: 'ADL\u5236\u9650', none: '\u306A\u3057'
+      pain: 'comp_pain', respiratory: 'comp_resp', appearance: 'comp_appear',
+      psycho: 'comp_psycho', adl: 'comp_adl', none: 'comp_none'
     };
-    var compStr = input.complications.map(function (c) { return compLabels[c] || c; }).join('\u3001') || '\u672A\u9078\u629E';
+    var compStr = input.complications.map(function (c) { return t(compLabels[c] || c); }).join(', ') || '-';
 
-    var html =
+    app.innerHTML =
       '<div class="step-screen fade-in">' +
-        progressBar(5, 5) +
-        '<h2 class="step-title">\u5165\u529B\u5185\u5BB9\u306E\u78BA\u8A8D</h2>' +
-        '<p class="step-subtitle">\u4EE5\u4E0B\u306E\u5185\u5BB9\u3067\u30D7\u30ED\u30B0\u30E9\u30E0\u3092\u751F\u6210\u3057\u307E\u3059\u3002</p>' +
+        langSwitcher() +
+        progressBar(6, 6) +
+        '<h2 class="step-title">' + t('s6_title') + '</h2>' +
+        '<p class="step-subtitle">' + t('s6_sub') + '</p>' +
         '<div class="summary-card">' +
-          summaryRow('\u5E74\u9F62', input.age + '\u6B73', 1) +
-          summaryRow('\u6027\u5225', input.sex === 'female' ? '\u5973\u6027' : '\u7537\u6027', 1) +
-          summaryRow('Cobb\u89D2', input.cobbAngle + '\u00B0\uFF08' + sev.label + '\uFF09', 2) +
-          summaryRow('\u30AB\u30FC\u30D6\u30BF\u30A4\u30D7', ProgramEngine.curveTypeLabel(input.curveType), 2) +
-          summaryRow('Risser\u30B5\u30A4\u30F3', input.risser + '', 3) +
-          summaryRow('\u6CBB\u7642\u72B6\u6CC1', ProgramEngine.treatmentLabel(input.treatment), 3) +
-          summaryRow('\u5408\u4F75\u75C7', compStr, 4) +
+          summaryRow(t('sum_age'), input.age + (I18N.getLang() === 'ja' ? '\u6B73' : ''), 1) +
+          summaryRow(t('sum_sex'), input.sex === 'female' ? t('female') : t('male'), 1) +
+          summaryRow(t('sum_duration'), durLabel, 2) +
+          summaryRow(t('sum_cobb'), input.cobbAngle + '\u00B0 (' + t(sev.key) + ')', 3) +
+          summaryRow(t('sum_curve'), t(ProgramEngine.curveTypeLabelKey(input.curveType)), 3) +
+          summaryRow(t('sum_risser'), input.risser + '', 4) +
+          summaryRow(t('sum_treatment'), treatLabels, 4) +
+          summaryRow(t('sum_comp'), compStr, 5) +
         '</div>' +
         '<div style="text-align:center;margin-top:1.5rem">' +
-          '<button class="btn-primary" data-action="generate">\u30D7\u30ED\u30B0\u30E9\u30E0\u3092\u751F\u6210</button>' +
+          '<button class="btn-primary" data-action="generate">' + t('generate') + '</button>' +
         '</div>' +
         '<div class="nav-area">' +
-          '<button class="btn-back" data-action="back">\u2190 \u623B\u308B</button>' +
+          '<button class="btn-back" data-action="back">' + t('back') + '</button>' +
         '</div>' +
       '</div>';
-    app.innerHTML = html;
 
-    // 編集リンク
+    bindLangSwitcher();
     app.querySelectorAll('[data-edit]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         goToStep(parseInt(this.getAttribute('data-edit'), 10));
@@ -442,7 +449,7 @@
     bindAction('generate', function () {
       generatedProgram = ProgramEngine.generate(input);
       history.push(step);
-      step = 6;
+      step = 7;
       render();
     });
   }
@@ -451,53 +458,51 @@
     return '<div class="summary-row">' +
       '<span class="summary-label">' + label + '</span>' +
       '<span class="summary-value">' + escHtml(value) + '</span>' +
-      '<button class="summary-edit" data-edit="' + editStep + '">\u7DE8\u96C6</button>' +
+      '<button class="summary-edit" data-edit="' + editStep + '">' + t('edit') + '</button>' +
     '</div>';
   }
 
-  // ── Step 6: 結果画面 ──────────────────
-
+  // ── Step 7: 結果画面 ──────────────────
   function renderResult() {
     app.className = 'result-mode';
     var p = generatedProgram;
     if (!p) return;
 
     var html = '<div class="result-screen fade-in">';
+    html += langSwitcher();
 
-    // 印刷用ヘッダー
+    // 印刷ヘッダー
     html += '<div class="print-header">' +
-      '<h1>\u5074\u5F2A\u75C7\u30EA\u30CF\u30D3\u30EA\u30D7\u30ED\u30B0\u30E9\u30E0</h1>' +
-      '<p>\u751F\u6210\u65E5: ' + todayStr() + '</p>' +
+      '<h1>' + t('print_title') + '</h1>' +
+      '<p>' + t('res_date') + ': ' + todayStr() + '</p>' +
     '</div>';
 
     // (A) 概要カード
     html += '<div class="result-overview">' +
-      '<h2>\u30D7\u30ED\u30B0\u30E9\u30E0\u6982\u8981</h2>' +
+      '<h2>' + t('res_title') + '</h2>' +
       '<div class="result-badges">' +
-        '<span class="badge" style="background:' + p.riskColor + '">' + p.riskLabel + '</span>' +
-        '<span class="badge" style="background:' + p.severity.color + '">' + p.severity.label + ' (Cobb ' + p.input.cobbAngle + '\u00B0)</span>' +
+        '<span class="badge" style="background:' + p.riskColor + '">' + t(p.riskLabelKey) + '</span>' +
+        '<span class="badge" style="background:' + p.severity.color + '">' + t(p.severity.key) + ' (Cobb ' + p.input.cobbAngle + '\u00B0)</span>' +
       '</div>' +
       '<div class="result-meta">' +
-        metaItem('\u5E74\u9F62', p.input.age + '\u6B73') +
-        metaItem('\u30AB\u30FC\u30D6', ProgramEngine.curveTypeLabel(p.input.curveType)) +
-        metaItem('\u901A\u9662\u983B\u5EA6', p.visitFrequency) +
-        metaItem('\u30D7\u30ED\u30B0\u30E9\u30E0\u671F\u9593', p.totalMonths + '\u30F6\u6708') +
+        metaItem(t('res_age'), p.input.age + (I18N.getLang() === 'ja' ? '\u6B73' : '')) +
+        metaItem(t('res_curve'), t(ProgramEngine.curveTypeLabelKey(p.input.curveType))) +
+        metaItem(t('res_visit'), t(p.visitFreqKey)) +
+        metaItem(t('res_period'), p.totalMonths + t('dur_months')) +
       '</div>' +
     '</div>';
 
     // (D) 手術アラート
     if (p.isSurgicalAlert) {
       html += '<div class="surgical-alert">' +
-        '<h3>\u26A0 \u624B\u8853\u691C\u8A0E\u306E\u63A8\u5968</h3>' +
-        '<p>Cobb\u89D2' + p.input.cobbAngle + '\u00B0\u306F\u624B\u8853\u9069\u5FDC\u306E\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002' +
-        '\u5074\u5F2A\u75C7\u5C02\u9580\u306E\u6574\u5F62\u5916\u79D1\u533B\u3078\u306E\u53D7\u8A3A\u3092\u5F37\u304F\u304A\u52E7\u3081\u3057\u307E\u3059\u3002' +
-        '\u4EE5\u4E0B\u306E\u30D7\u30ED\u30B0\u30E9\u30E0\u306F\u624B\u8853\u6C7A\u5B9A\u307E\u3067\u306E\u4FDD\u5B58\u7642\u6CD5\u3068\u3057\u3066\u63D0\u6848\u3057\u3066\u3044\u307E\u3059\u3002</p>' +
+        '<h3>' + t('res_surgical_title') + '</h3>' +
+        '<p>Cobb' + p.input.cobbAngle + '\u00B0' + t('res_surgical_text') + '</p>' +
       '</div>';
     }
 
     // (B) タイムライン
     html += '<div class="timeline-section">' +
-      '<h3>\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3</h3>' +
+      '<h3>' + t('res_timeline') + '</h3>' +
       '<div class="timeline-svg-wrap" id="timeline-container"></div>' +
     '</div>';
 
@@ -510,12 +515,12 @@
         '<summary>' +
           '<span class="phase-color-dot" style="background:' + phase.color + '"></span>' +
           phase.name +
-          '<span class="phase-period">' + phase.startMonth + '-' + phase.endMonth + '\u30F6\u6708</span>' +
+          '<span class="phase-period">' + phase.startMonth + '-' + phase.endMonth + t('dur_m') + '</span>' +
         '</summary>' +
         '<div class="phase-body">' +
           phaseGoals(phase) +
-          phaseExercises('\u901A\u9662\u30A8\u30AF\u30B5\u30B5\u30A4\u30BA', phase.clinicExercises) +
-          phaseExercises('\u81EA\u4E3B\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0', phase.homeExercises) +
+          phaseExercises(t('res_clinic'), phase.clinicExercises) +
+          phaseExercises(t('res_home'), phase.homeExercises) +
           phaseBracing(phase.bracingGuidance) +
           phaseEvals(phase.evaluations) +
           phaseMilestones(phase.milestones) +
@@ -524,9 +529,9 @@
     });
     html += '</div>';
 
-    // (E) QOL・心理サポート
+    // (E) QOL
     html += '<div class="qol-section">' +
-      '<h3>QOL\u30FB\u751F\u6D3B\u6307\u5C0E</h3>' +
+      '<h3>' + t('res_qol') + '</h3>' +
       '<div class="qol-cards">';
     p.qol.forEach(function (q) {
       html += '<div class="qol-card">' +
@@ -536,37 +541,33 @@
     });
     html += '</div></div>';
 
-    // (F) アクション・フッター
+    // (F) アクション
     html += '<div class="result-actions">' +
-      '<button class="btn-primary" data-action="print">\u5370\u5237</button>' +
-      '<button class="btn-secondary" data-action="restart">\u3084\u308A\u76F4\u3059</button>' +
+      '<button class="btn-primary" data-action="print">' + t('print') + '</button>' +
+      '<button class="btn-secondary" data-action="restart">' + t('restart') + '</button>' +
     '</div>';
 
     html += '<div class="result-footer">' +
-      '<p>\u26A0 \u672C\u30D7\u30ED\u30B0\u30E9\u30E0\u306F\u6559\u80B2\u30FB\u30C7\u30E2\u76EE\u7684\u3067\u3059\u3002\u5B9F\u969B\u306E\u6CBB\u7642\u306F\u5FC5\u305A\u5074\u5F2A\u75C7\u5C02\u9580\u306E\u533B\u5E2B\u30FB\u7406\u5B66\u7642\u6CD5\u58EB\u306E\u6307\u5C0E\u306E\u3082\u3068\u3067\u884C\u3063\u3066\u304F\u3060\u3055\u3044\u3002<br>' +
-      'SOSORT 2016 \u30AC\u30A4\u30C9\u30E9\u30A4\u30F3\u6E96\u62E0\u3002Schroth\u6CD5\u30FBSEAS\u30D9\u30FC\u30B9\u3002<br>' +
-      '\u751F\u6210\u65E5: ' + todayStr() + '</p>' +
+      '<p>' + t('res_footer') + '<br>' + t('res_footer2') + '<br>' +
+      t('res_date') + ': ' + todayStr() + '</p>' +
     '</div>';
 
     html += '</div>';
     app.innerHTML = html;
+    bindLangSwitcher();
 
     // タイムラインSVG挿入
     var container = document.getElementById('timeline-container');
-    if (container) {
-      container.appendChild(TimelineRenderer.render(p));
-    }
+    if (container) container.appendChild(TimelineRenderer.render(p));
 
-    // 印刷時にdetails全展開
     bindAction('print', function () {
       app.querySelectorAll('details').forEach(function (d) { d.open = true; });
       setTimeout(function () { window.print(); }, 100);
     });
     bindAction('restart', function () {
-      input = { age: null, sex: null, cobbAngle: 25, curveType: null, risser: null, treatment: null, complications: [] };
+      input = { age: null, sex: null, duration: null, cobbAngle: 25, curveType: null, risser: null, treatment: [], complications: [] };
       generatedProgram = null;
-      step = 0;
-      history = [];
+      step = 0; history = [];
       render();
     });
   }
@@ -579,7 +580,7 @@
   }
 
   function phaseGoals(phase) {
-    var html = '<div class="phase-sub"><h4>\u76EE\u6A19</h4><ul class="phase-goals">';
+    var html = '<div class="phase-sub"><h4>' + t('res_goals') + '</h4><ul class="phase-goals">';
     phase.goals.forEach(function (g) { html += '<li>' + escHtml(g) + '</li>'; });
     html += '</ul></div>';
     return html;
@@ -587,21 +588,26 @@
 
   function phaseExercises(title, exercises) {
     if (!exercises || exercises.length === 0) return '';
-    var html = '<div class="phase-sub"><h4>' + title + '\uFF08' + exercises.length + '\u7A2E\uFF09</h4>' +
+    var html = '<div class="phase-sub"><h4>' + title + ' (' + exercises.length + t('n_exercises') + ')</h4>' +
       '<div class="exercise-list">';
     exercises.forEach(function (ex) {
+      var name = I18N.exField(ex.id, 'n') || ex.name;
+      var desc = I18N.exField(ex.id, 'd') || ex.description;
+      var proc = I18N.exField(ex.id, 'p') || ex.procedure;
+      var caut = I18N.exField(ex.id, 'c') || ex.caution;
+      var illust = ExIllust.get(ex.id);
+
       html += '<details class="exercise-card">' +
         '<summary>' +
           '<span class="ex-method-tag ' + ex.method + '">' + methodLabel(ex.method) + '</span>' +
-          '<span class="ex-name">' + escHtml(ex.name) + '</span>' +
+          '<span class="ex-name">' + escHtml(name) + '</span>' +
         '</summary>' +
         '<div class="exercise-body">' +
-          '<p class="ex-desc">' + escHtml(ex.description) + '</p>' +
-          '<div class="ex-prescription">' +
-            prescriptionText(ex) +
-          '</div>' +
-          '<ol>' + ex.procedure.map(function (s) { return '<li>' + escHtml(s) + '</li>'; }).join('') + '</ol>' +
-          (ex.caution ? '<div class="ex-caution">\u26A0 ' + escHtml(ex.caution) + '</div>' : '') +
+          (illust ? '<div class="ex-illust-wrap">' + illust + '</div>' : '') +
+          '<p class="ex-desc">' + escHtml(desc) + '</p>' +
+          '<div class="ex-prescription">' + prescriptionText(ex) + '</div>' +
+          '<ol>' + (Array.isArray(proc) ? proc : ex.procedure).map(function (s) { return '<li>' + escHtml(s) + '</li>'; }).join('') + '</ol>' +
+          (caut ? '<div class="ex-caution">\u26A0 ' + escHtml(caut) + '</div>' : '') +
         '</div>' +
       '</details>';
     });
@@ -611,33 +617,32 @@
 
   function prescriptionText(ex) {
     var parts = [];
-    if (ex.sets) parts.push('<strong>' + ex.sets + '\u30BB\u30C3\u30C8</strong>');
-    if (ex.reps && ex.reps > 1) parts.push('<strong>' + ex.reps + '\u56DE</strong>');
+    if (ex.sets) parts.push('<strong>' + ex.sets + t('sets') + '</strong>');
+    if (ex.reps && ex.reps > 1) parts.push('<strong>' + ex.reps + t('reps') + '</strong>');
     if (ex.duration) {
-      var d = ex.duration >= 60 ? Math.round(ex.duration / 60) + '\u5206' : ex.duration + '\u79D2';
-      parts.push('<strong>' + d + '\u4FDD\u6301</strong>');
+      var min = Math.round(ex.duration / 60);
+      var d = ex.duration >= 60 ? min + (I18N.getLang() === 'ja' ? '\u5206' : 'min') : ex.duration + (I18N.getLang() === 'ja' ? '\u79D2' : 's');
+      parts.push('<strong>' + d + t('hold') + '</strong>');
     }
-    return parts.join(' \u00D7 ') || '\u30BB\u30E9\u30D4\u30B9\u30C8\u6307\u793A\u306B\u5F93\u3046';
+    return parts.join(' \u00D7 ') || t('therapist');
   }
 
   function phaseBracing(guidance) {
     if (!guidance) return '';
-    var html = '<div class="phase-sub"><h4>\u88C5\u5177\u6307\u5C0E</h4>' +
+    return '<div class="phase-sub"><h4>' + t('res_bracing') + '</h4>' +
       '<div class="bracing-card">' +
-        '<h5>\u88C5\u7740\u6642\u9593\u76EE\u6A19</h5>' +
+        '<h5>' + t('res_bracing_hours') + '</h5>' +
         '<div class="bracing-hours">' + escHtml(guidance.wearingHours) + '</div>' +
-        '<ul>';
-    guidance.notes.forEach(function (n) { html += '<li>' + escHtml(n) + '</li>'; });
-    html += '</ul></div></div>';
-    return html;
+        '<ul>' + guidance.notes.map(function (n) { return '<li>' + escHtml(n) + '</li>'; }).join('') + '</ul>' +
+      '</div></div>';
   }
 
   function phaseEvals(evals) {
     if (!evals || evals.length === 0) return '';
-    var html = '<div class="phase-sub"><h4>\u8A55\u4FA1\u30B9\u30B1\u30B8\u30E5\u30FC\u30EB</h4><div class="eval-list">';
+    var html = '<div class="phase-sub"><h4>' + t('res_eval') + '</h4><div class="eval-list">';
     evals.forEach(function (ev) {
       html += '<div class="eval-item' + (ev.type === 'xray' ? ' xray' : '') + '">' +
-        '<span class="eval-month">' + ev.month + 'M</span>' +
+        '<span class="eval-month">' + ev.month + t('dur_m') + '</span>' +
         '<span>' + escHtml(ev.label) + '</span>' +
       '</div>';
     });
@@ -647,10 +652,10 @@
 
   function phaseMilestones(ms) {
     if (!ms || ms.length === 0) return '';
-    var html = '<div class="phase-sub"><h4>\u30DE\u30A4\u30EB\u30B9\u30C8\u30FC\u30F3</h4><div class="milestone-list">';
+    var html = '<div class="phase-sub"><h4>' + t('res_milestone') + '</h4><div class="milestone-list">';
     ms.forEach(function (m) {
       html += '<div class="milestone-item">' +
-        '<span class="milestone-month">' + m.month + 'M</span>' +
+        '<span class="milestone-month">' + m.month + t('dur_m') + '</span>' +
         '<span>' + escHtml(m.label) + '</span>' +
       '</div>';
     });
@@ -659,22 +664,37 @@
   }
 
   function methodLabel(method) {
-    var labels = {
-      schroth: 'Schroth',
-      seas: 'SEAS',
-      core: '\u30B3\u30A2',
-      stretching: '\u30B9\u30C8\u30EC\u30C3\u30C1',
-      breathing: '\u547C\u5438',
-      postSurgery: '\u8853\u5F8C'
+    var keys = {
+      schroth: 'm_schroth', seas: 'm_seas', core: 'm_core',
+      stretching: 'm_stretch', breathing: 'm_breath', postSurgery: 'm_post'
     };
-    return labels[method] || method;
+    return t(keys[method] || method);
   }
 
-  // ── ユーティリティ ────────────────────
+  // ── 共通ヘルパー ────────────────────
+  function optBtn(group, val, title, desc, selected) {
+    var sel = selected ? ' selected' : '';
+    return '<button class="option-btn' + sel + '" data-' + group + '="' + val + '">' +
+      '<span class="option-title">' + title + '</span>' +
+      (desc ? '<span class="option-desc">' + desc + '</span>' : '') +
+    '</button>';
+  }
+
+  function bindSelect(group, setter) {
+    var btns = app.querySelectorAll('[data-' + group + ']');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var val = this.getAttribute('data-' + group);
+        setter(val);
+        btns.forEach(function (b) { b.classList.remove('selected'); });
+        this.classList.add('selected');
+        updateNavState();
+      });
+    });
+  }
 
   function bindAction(action, handler) {
-    var btns = app.querySelectorAll('[data-action="' + action + '"]');
-    btns.forEach(function (btn) {
+    app.querySelectorAll('[data-action="' + action + '"]').forEach(function (btn) {
       btn.addEventListener('click', handler);
     });
   }
@@ -685,12 +705,13 @@
     var valid = false;
     switch (step) {
       case 1: valid = !!input.age && !!input.sex; break;
-      case 2: valid = !!input.curveType; break;
-      case 3:
+      case 2: valid = !!input.duration; break;
+      case 3: valid = !!input.curveType; break;
+      case 4:
         var risserOk = input.age >= 18 || input.risser !== null;
-        valid = risserOk && !!input.treatment;
+        valid = risserOk && input.treatment.length > 0;
         break;
-      case 4: valid = true; break;
+      case 5: valid = true; break;
       default: valid = true;
     }
     nextBtn.disabled = !valid;
@@ -699,8 +720,9 @@
   }
 
   function escHtml(str) {
+    if (str == null) return '';
     var d = document.createElement('div');
-    d.textContent = str;
+    d.textContent = String(str);
     return d.innerHTML;
   }
 
@@ -710,7 +732,6 @@
   }
 
   // ── 初期化 ─────────────────────────
-
   render();
 
 })();

@@ -1,194 +1,167 @@
 /* ======================================================
    program-engine.js — プログラム生成アルゴリズム
    SOSORT 2016ガイドライン準拠リスク分類 + フェーズ構成
+   期間3段階(short/medium/long) + 治療複数選択対応
    ====================================================== */
 
 'use strict';
 
 var ProgramEngine = (function () {
 
-  // ── リスク分類 ─────────────────────────
+  // ── 治療複数選択→単一リスク解決 ──────────────
+  function resolveTreatment(treatments) {
+    if (!treatments || treatments.length === 0) return 'none';
+    // 優先度: postSurgery > bracing > exercise > none
+    if (treatments.indexOf('postSurgery') !== -1) return 'postSurgery';
+    if (treatments.indexOf('bracing') !== -1) return 'bracing';
+    if (treatments.indexOf('exercise') !== -1) return 'exercise';
+    return 'none';
+  }
 
-  /**
-   * SOSORT 2016準拠リスク分類
-   * @param {object} input - { age, cobbAngle, risser, treatment }
-   * @returns {string} 'observation' | 'exercise' | 'bracing' | 'surgical_alert' | 'postSurgery'
-   */
+  // ── リスク分類 ─────────────────────────
   function classifyRisk(input) {
-    if (input.treatment === 'postSurgery') return 'postSurgery';
+    var treatment = Array.isArray(input.treatment)
+      ? resolveTreatment(input.treatment)
+      : input.treatment;
+    if (treatment === 'postSurgery') return 'postSurgery';
 
     var cobb = input.cobbAngle;
     var risser = input.risser;
     var isGrowing = input.age <= 17;
 
     if (isGrowing) {
-      // 成長期
       if (cobb < 15) return 'observation';
-      if (cobb < 25) {
-        return risser <= 2 ? 'exercise' : 'observation';
-      }
-      if (cobb < 40) {
-        return risser <= 2 ? 'bracing' : 'exercise';
-      }
-      if (cobb < 50) {
-        return risser <= 3 ? 'bracing' : 'exercise';
-      }
-      return 'surgical_alert'; // 50°以上
+      if (cobb < 25) return risser <= 2 ? 'exercise' : 'observation';
+      if (cobb < 40) return risser <= 2 ? 'bracing' : 'exercise';
+      if (cobb < 50) return risser <= 3 ? 'bracing' : 'exercise';
+      return 'surgical_alert';
     } else {
-      // 成人
       if (cobb < 30) return 'observation';
       if (cobb < 50) return 'exercise';
       return 'surgical_alert';
     }
   }
 
-  /**
-   * リスク分類の日本語ラベル
-   */
-  function riskLabel(risk) {
-    var labels = {
-      observation: '経過観察＋自主トレ',
-      exercise: '運動療法（専門的）',
-      bracing: '装具療法＋運動療法',
-      surgical_alert: '手術検討（運動療法併用）',
-      postSurgery: '術後リハビリテーション'
+  function riskLabelKey(risk) {
+    var map = {
+      observation: 'risk_obs', exercise: 'risk_ex', bracing: 'risk_brace',
+      surgical_alert: 'risk_surg', postSurgery: 'risk_post'
     };
-    return labels[risk] || risk;
+    return map[risk] || risk;
   }
 
-  /**
-   * リスクの色クラス
-   */
   function riskColor(risk) {
-    var colors = {
-      observation: '#4CAF50',
-      exercise: '#2E86AB',
-      bracing: '#FF9800',
-      surgical_alert: '#E53935',
-      postSurgery: '#7B1FA2'
-    };
-    return colors[risk] || '#666';
+    var c = { observation:'#4CAF50', exercise:'#2E86AB', bracing:'#FF9800',
+              surgical_alert:'#E53935', postSurgery:'#7B1FA2' };
+    return c[risk] || '#666';
   }
 
-  /**
-   * 重症度バッジ
-   */
   function severityBadge(cobb) {
-    if (cobb < 20) return { label: '軽度', color: '#4CAF50' };
-    if (cobb < 35) return { label: '中等度', color: '#FF9800' };
-    if (cobb < 50) return { label: '重度', color: '#E53935' };
-    return { label: '最重度', color: '#B71C1C' };
+    if (cobb < 20) return { key: 'sev_mild', color: '#4CAF50' };
+    if (cobb < 35) return { key: 'sev_moderate', color: '#FF9800' };
+    if (cobb < 50) return { key: 'sev_severe', color: '#E53935' };
+    return { key: 'sev_very_severe', color: '#B71C1C' };
   }
 
-  // ── フェーズ構成 ─────────────────────────
+  // ── 期間→月数 ─────────────────────────
+  var DURATION_MONTHS = { short: 6, medium: 18, long: 36 };
 
-  var PHASE_TEMPLATES = {
-    observation: [
-      { id: 'initial', name: '導入期', start: 1, end: 3, color: '#26A69A',
-        goals: ['姿勢評価と自己認識の向上', '基本的な自己矯正の習得', '運動習慣の確立'] },
-      { id: 'maintenance', name: '維持期', start: 4, end: 36, color: '#66BB6A',
-        goals: ['自主トレの継続', '6ヶ月ごとの経過観察', '成長終了まで進行モニタリング'] }
-    ],
-    exercise: [
-      { id: 'initial', name: '初期（基礎構築）', start: 1, end: 6, color: '#26A69A',
-        goals: ['専門的評価と個別プログラム立案', '自己矯正技術の習得', '基本的な体幹安定化'] },
-      { id: 'intermediate', name: '中期（強化）', start: 7, end: 18, color: '#2E86AB',
-        goals: ['矯正保持力の向上', '機能的動作への統合', '非対称トレーニングの深化'] },
-      { id: 'advanced', name: '後期（統合）', start: 19, end: 30, color: '#7E57C2',
-        goals: ['日常動作への完全統合', 'スポーツ活動への応用', '自立した自己管理'] },
-      { id: 'maintenance', name: '維持期', start: 31, end: 36, color: '#66BB6A',
-        goals: ['獲得した矯正力の維持', '自主トレプログラムへの移行', '定期評価の継続'] }
-    ],
-    bracing: [
-      { id: 'initial', name: '装具導入期', start: 1, end: 6, color: '#26A69A',
-        goals: ['装具の適切なフィッティング', '装具装着下での運動療法開始', '1日16-23時間装着の目標達成'] },
-      { id: 'intermediate', name: '装具＋強化期', start: 7, end: 18, color: '#2E86AB',
-        goals: ['装具内矯正力の最大化', '装具外での自己矯正力向上', '心理的サポートの提供'] },
-      { id: 'advanced', name: '離脱期', start: 19, end: 30, color: '#7E57C2',
-        goals: ['段階的な装具装着時間の短縮', '装具なしでの矯正保持', '自立した運動プログラムの確立'] },
-      { id: 'maintenance', name: '維持期', start: 31, end: 36, color: '#66BB6A',
-        goals: ['装具離脱後のフォローアップ', '矯正力の維持確認', '成長終了の確認'] }
-    ],
-    surgical_alert: [
-      { id: 'initial', name: '術前準備期', start: 1, end: 6, color: '#26A69A',
-        goals: ['術前の体力・呼吸機能向上', '心理的準備', '手術方針の理解と意思決定支援'] },
-      { id: 'intermediate', name: '集中運動期', start: 7, end: 18, color: '#2E86AB',
-        goals: ['可能な限りの矯正効果の獲得', '術前の筋力・柔軟性の最大化', '手術回避の可能性の評価'] },
-      { id: 'advanced', name: '評価・方針決定期', start: 19, end: 30, color: '#7E57C2',
-        goals: ['運動療法の効果判定', '手術適応の最終判断', '術前リハプログラムの実施'] },
-      { id: 'maintenance', name: '継続管理期', start: 31, end: 36, color: '#66BB6A',
-        goals: ['治療方針に基づく継続管理', '手術決定時は術前強化', '保存療法継続時は維持プログラム'] }
-    ],
-    postSurgery: [
-      { id: 'acute', name: '急性期', start: 1, end: 3, color: '#EF5350',
-        goals: ['合併症予防（DVT・肺炎）', '疼痛管理', '早期離床と基本動作獲得'] },
-      { id: 'recovery', name: '回復期', start: 4, end: 12, color: '#26A69A',
-        goals: ['段階的な活動範囲拡大', '体幹筋力の段階的回復', '日常生活動作の自立'] },
-      { id: 'strengthening', name: '強化期', start: 13, end: 24, color: '#2E86AB',
-        goals: ['体幹・四肢筋力の本格的強化', '有酸素運動の再開', '社会復帰・復学の準備'] },
-      { id: 'return', name: '復帰期', start: 25, end: 36, color: '#66BB6A',
-        goals: ['スポーツ活動への段階的復帰', '完全な社会復帰', '長期フォローアップ体制の確立'] }
-    ]
+  // ── フェーズ構成（期間対応） ────────────────
+  var PHASE_COLORS = {
+    initial: '#26A69A', intermediate: '#2E86AB', advanced: '#7E57C2',
+    maintenance: '#66BB6A', acute: '#EF5350', recovery: '#26A69A',
+    strengthening: '#2E86AB', return: '#66BB6A'
   };
 
-  // ── エクササイズ選択 ──────────────────────
+  // riskKey: obs/ex/br/sa/ps  phaseId で i18n参照
+  var RISK_KEY_MAP = {
+    observation: 'obs', exercise: 'ex', bracing: 'br',
+    surgical_alert: 'sa', postSurgery: 'ps'
+  };
 
-  /**
-   * フェーズ名をDB用に変換（bracing/surgical_alertのフェーズ名をExerciseDBのphaseにマッピング）
-   */
-  function mapPhaseToExercisePhase(phaseId, risk) {
-    if (risk === 'postSurgery') return phaseId; // acute, recovery, strengthening, return
-    var mapping = {
-      initial: 'initial',
-      intermediate: 'intermediate',
-      advanced: 'advanced',
-      maintenance: 'maintenance'
-    };
-    return mapping[phaseId] || phaseId;
+  function buildPhases(risk, totalMonths) {
+    var rk = RISK_KEY_MAP[risk];
+    if (risk === 'postSurgery') return buildPostSurgeryPhases(totalMonths, rk);
+    if (totalMonths <= 6) return buildShortPhases(risk, rk);
+    if (totalMonths <= 18) return buildMediumPhases(risk, rk);
+    return buildLongPhases(risk, rk);
   }
 
-  /**
-   * エクササイズをフィルタリングして選択
-   * @param {object} params - { curveType, phaseId, risk, cobbAngle, complications }
-   * @returns {object} { clinic: [], home: [] }
-   */
+  function ph(id, rk, start, end) {
+    var i18nKey = rk + '_' + id;
+    var data = I18N.phase(i18nKey);
+    return {
+      id: id,
+      i18nKey: i18nKey,
+      name: data ? data.n : id,
+      start: start,
+      end: end,
+      color: PHASE_COLORS[id] || '#888',
+      goals: data ? data.g : []
+    };
+  }
+
+  function buildShortPhases(risk, rk) {
+    return [
+      ph('initial', rk, 1, 3),
+      ph(risk === 'observation' ? 'maintenance' : 'intermediate', rk, 4, 6)
+    ];
+  }
+
+  function buildMediumPhases(risk, rk) {
+    return [
+      ph('initial', rk, 1, 6),
+      ph('intermediate', rk, 7, 12),
+      ph(risk === 'observation' ? 'maintenance' : 'advanced', rk, 13, 18)
+    ];
+  }
+
+  function buildLongPhases(risk, rk) {
+    return [
+      ph('initial', rk, 1, 6),
+      ph('intermediate', rk, 7, 18),
+      ph('advanced', rk, 19, 30),
+      ph('maintenance', rk, 31, 36)
+    ];
+  }
+
+  function buildPostSurgeryPhases(totalMonths, rk) {
+    if (totalMonths <= 6) {
+      return [ ph('acute', rk, 1, 3), ph('recovery', rk, 4, 6) ];
+    }
+    if (totalMonths <= 18) {
+      return [ ph('acute', rk, 1, 3), ph('recovery', rk, 4, 9), ph('strengthening', rk, 10, 18) ];
+    }
+    return [
+      ph('acute', rk, 1, 3), ph('recovery', rk, 4, 12),
+      ph('strengthening', rk, 13, 24), ph('return', rk, 25, 36)
+    ];
+  }
+
+  // ── エクササイズ選択 ──────────────────────
+  function mapPhaseToExercisePhase(phaseId, risk) {
+    if (risk === 'postSurgery') return phaseId;
+    return { initial:'initial', intermediate:'intermediate', advanced:'advanced', maintenance:'maintenance' }[phaseId] || phaseId;
+  }
+
   function selectExercises(params) {
-    var curveType = params.curveType;
-    var phaseId = params.phaseId;
-    var risk = params.risk;
-    var cobb = params.cobbAngle;
-    var complications = params.complications || [];
+    var curveType = params.curveType, phaseId = params.phaseId, risk = params.risk;
+    var cobb = params.cobbAngle, complications = params.complications || [];
     var exPhase = mapPhaseToExercisePhase(phaseId, risk);
 
-    // 術後はpostSurgery専用 + 回復期以降は一般エクササイズも追加
-    if (risk === 'postSurgery') {
-      return selectPostSurgeryExercises(exPhase, curveType, complications);
-    }
+    if (risk === 'postSurgery') return selectPostSurgeryExercises(exPhase, curveType);
 
-    // 一般エクササイズのフィルタリング
     var pool = EXERCISES.filter(function (ex) {
-      if (ex.method === 'postSurgery') return false;
-      if (ex.curveTypes.indexOf(curveType) === -1) return false;
-      if (ex.phases.indexOf(exPhase) === -1) return false;
-      return true;
+      return ex.method !== 'postSurgery' &&
+        ex.curveTypes.indexOf(curveType) !== -1 &&
+        ex.phases.indexOf(exPhase) !== -1;
     });
+    var maxDiff = exPhase === 'initial' ? 2 : 3;
+    pool = pool.filter(function (ex) { return ex.difficulty <= maxDiff; });
 
-    // 難易度フィルタ
-    var maxDifficulty = 3;
-    if (exPhase === 'initial') maxDifficulty = 2;
-    pool = pool.filter(function (ex) { return ex.difficulty <= maxDifficulty; });
-
-    // Schroth/SEAS比率調整（Cobb角が大きいほどSchroth重視）
-    var schrothRatio = cobb >= 35 ? 0.5 : (cobb >= 25 ? 0.4 : 0.3);
-    var seasRatio = 0.25;
-    var coreRatio = 0.2;
-    var otherRatio = 1 - schrothRatio - seasRatio - coreRatio;
-
-    var clinicCount = 10;
-    var homeCount = 6;
-
-    // メソッド別に分ける
-    var byMethod = { schroth: [], seas: [], core: [], other: [] };
+    var schrothR = cobb >= 35 ? 0.5 : (cobb >= 25 ? 0.4 : 0.3);
+    var clinicCount = 10, homeCount = 6;
+    var byMethod = { schroth:[], seas:[], core:[], other:[] };
     pool.forEach(function (ex) {
       if (ex.method === 'schroth') byMethod.schroth.push(ex);
       else if (ex.method === 'seas') byMethod.seas.push(ex);
@@ -196,355 +169,178 @@ var ProgramEngine = (function () {
       else byMethod.other.push(ex);
     });
 
-    // 合併症対応の優先エクササイズ
     var priorityIds = [];
-    if (complications.indexOf('pain') !== -1) {
-      priorityIds.push('str-cat-cow', 'str-child-pose', 'br-diaphragm');
-    }
-    if (complications.indexOf('respiratory') !== -1) {
-      priorityIds.push('sch-rab', 'br-diaphragm', 'br-rib-expansion');
-    }
-    if (complications.indexOf('psycho') !== -1) {
-      priorityIds.push('seas-mirror', 'br-diaphragm');
-    }
+    if (complications.indexOf('pain') !== -1) priorityIds.push('str-cat-cow','str-child-pose','br-diaphragm');
+    if (complications.indexOf('respiratory') !== -1) priorityIds.push('sch-rab','br-diaphragm','br-rib-expansion');
+    if (complications.indexOf('psycho') !== -1) priorityIds.push('seas-mirror','br-diaphragm');
 
-    // 通院用エクササイズ選択
-    var clinic = [];
-    var usedIds = {};
-
-    // 優先エクササイズを先に追加
+    var clinic = [], usedIds = {};
     priorityIds.forEach(function (id) {
       if (clinic.length >= clinicCount) return;
-      var ex = findExercise(id, pool);
-      if (ex && !usedIds[ex.id]) {
-        clinic.push(ex);
-        usedIds[ex.id] = true;
-      }
+      var ex = findEx(id, pool);
+      if (ex && !usedIds[ex.id]) { clinic.push(ex); usedIds[ex.id] = true; }
     });
-
-    // メソッド別に残り枠を埋める
     var targets = [
-      { list: byMethod.schroth, count: Math.round(clinicCount * schrothRatio) },
-      { list: byMethod.seas, count: Math.round(clinicCount * seasRatio) },
-      { list: byMethod.core, count: Math.round(clinicCount * coreRatio) },
-      { list: byMethod.other, count: Math.round(clinicCount * otherRatio) }
+      { list: byMethod.schroth, count: Math.round(clinicCount * schrothR) },
+      { list: byMethod.seas, count: Math.round(clinicCount * 0.25) },
+      { list: byMethod.core, count: Math.round(clinicCount * 0.2) },
+      { list: byMethod.other, count: Math.round(clinicCount * (1 - schrothR - 0.45)) }
     ];
-
     targets.forEach(function (t) {
-      var added = 0;
-      for (var i = 0; i < t.list.length && added < t.count && clinic.length < clinicCount; i++) {
-        if (!usedIds[t.list[i].id]) {
-          clinic.push(t.list[i]);
-          usedIds[t.list[i].id] = true;
-          added++;
-        }
+      var a = 0;
+      for (var i = 0; i < t.list.length && a < t.count && clinic.length < clinicCount; i++) {
+        if (!usedIds[t.list[i].id]) { clinic.push(t.list[i]); usedIds[t.list[i].id] = true; a++; }
       }
     });
 
-    // 自主トレ用（難易度低め、自宅実施可能なもの優先）
     var home = [];
-    var homePool = pool.filter(function (ex) {
-      return ex.difficulty <= 2 && !usedIds[ex.id];
-    });
-
-    // SEAS + ストレッチ + 呼吸を優先
-    var homePriority = ['seas', 'stretching', 'breathing', 'core'];
-    homePriority.forEach(function (m) {
+    var homePool = pool.filter(function (ex) { return ex.difficulty <= 2 && !usedIds[ex.id]; });
+    ['seas','stretching','breathing','core'].forEach(function (m) {
       for (var i = 0; i < homePool.length && home.length < homeCount; i++) {
-        if (homePool[i].method === m && !usedIds[homePool[i].id]) {
-          home.push(homePool[i]);
-          usedIds[homePool[i].id] = true;
-        }
+        if (homePool[i].method === m && !usedIds[homePool[i].id]) { home.push(homePool[i]); usedIds[homePool[i].id] = true; }
       }
     });
-
-    // 通院にも含まれる基本エクササイズを自主トレにも追加
-    var homeEssentials = ['seas-self-correction', 'sch-rab', 'br-diaphragm'];
-    homeEssentials.forEach(function (id) {
+    ['seas-self-correction','sch-rab','br-diaphragm'].forEach(function (id) {
       if (home.length >= homeCount) return;
-      var ex = findExercise(id, pool);
-      if (ex && !usedIds[ex.id]) {
-        home.push(ex);
-      }
+      var ex = findEx(id, pool);
+      if (ex && !usedIds[ex.id]) home.push(ex);
     });
-
     return { clinic: clinic, home: home };
   }
 
-  /**
-   * 術後エクササイズ選択
-   */
-  function selectPostSurgeryExercises(phase, curveType, complications) {
-    var postEx = EXERCISES.filter(function (ex) {
-      return ex.method === 'postSurgery' && ex.phases.indexOf(phase) !== -1;
-    });
-
-    // 回復期以降は一般エクササイズも追加
+  function selectPostSurgeryExercises(phase, curveType) {
+    var postEx = EXERCISES.filter(function (ex) { return ex.method === 'postSurgery' && ex.phases.indexOf(phase) !== -1; });
     var generalEx = [];
-    if (phase === 'recovery' || phase === 'strengthening' || phase === 'return') {
-      var mappedPhase = phase === 'recovery' ? 'initial' :
-                        phase === 'strengthening' ? 'intermediate' : 'advanced';
+    if (phase !== 'acute') {
+      var mp = phase === 'recovery' ? 'initial' : phase === 'strengthening' ? 'intermediate' : 'advanced';
       generalEx = EXERCISES.filter(function (ex) {
-        if (ex.method === 'postSurgery') return false;
-        if (ex.curveTypes.indexOf(curveType) === -1) return false;
-        if (ex.phases.indexOf(mappedPhase) === -1) return false;
-        if (ex.difficulty > (phase === 'recovery' ? 1 : 2)) return false;
-        return true;
+        return ex.method !== 'postSurgery' && ex.curveTypes.indexOf(curveType) !== -1 &&
+          ex.phases.indexOf(mp) !== -1 && ex.difficulty <= (phase === 'recovery' ? 1 : 2);
       });
     }
-
-    var clinic = postEx.concat(generalEx).slice(0, 10);
-    var home = generalEx.filter(function (ex) {
-      return ex.difficulty <= 1;
-    }).slice(0, 4);
-
-    return { clinic: clinic, home: home };
+    return { clinic: postEx.concat(generalEx).slice(0, 10), home: generalEx.filter(function (e) { return e.difficulty <= 1; }).slice(0, 4) };
   }
 
-  function findExercise(id, pool) {
-    for (var i = 0; i < pool.length; i++) {
-      if (pool[i].id === id) return pool[i];
-    }
+  function findEx(id, pool) {
+    for (var i = 0; i < pool.length; i++) { if (pool[i].id === id) return pool[i]; }
     return null;
   }
 
   // ── 評価スケジュール ──────────────────────
-
-  function generateEvaluationSchedule(risk, isGrowing) {
+  function generateEvals(risk, isGrowing, totalMonths) {
     var evals = [];
     if (risk === 'postSurgery') {
-      evals = [
-        { month: 1, label: '術後1ヶ月検診', type: 'medical' },
-        { month: 3, label: '術後3ヶ月検診', type: 'medical' },
-        { month: 6, label: '術後6ヶ月検診 + X線', type: 'xray' },
-        { month: 12, label: '術後1年検診 + X線', type: 'xray' },
-        { month: 24, label: '術後2年検診 + X線', type: 'xray' },
-        { month: 36, label: '術後3年検診', type: 'medical' }
-      ];
+      [1,3,6,12,24,36].forEach(function (m) {
+        if (m <= totalMonths) {
+          evals.push({ month: m, label: m + 'M', type: (m >= 6 && m <= 24) ? 'xray' : 'medical' });
+        }
+      });
     } else if (isGrowing) {
-      // 成長期は4-6ヶ月ごと
-      for (var m = 4; m <= 36; m += 4) {
-        var type = (m % 12 === 0) ? 'xray' : 'medical';
-        evals.push({
-          month: m,
-          label: m + 'ヶ月' + (type === 'xray' ? '（X線評価）' : '（経過観察）'),
-          type: type
-        });
+      for (var m = 4; m <= totalMonths; m += 4) {
+        evals.push({ month: m, label: m + 'M', type: (m % 12 === 0) ? 'xray' : 'medical' });
       }
     } else {
-      // 成人は6-12ヶ月ごと
-      [6, 12, 18, 24, 36].forEach(function (m) {
-        evals.push({
-          month: m,
-          label: m + 'ヶ月評価' + (m % 12 === 0 ? '（X線）' : ''),
-          type: m % 12 === 0 ? 'xray' : 'medical'
-        });
+      [6,12,18,24,36].forEach(function (m) {
+        if (m <= totalMonths) evals.push({ month: m, label: m + 'M', type: m % 12 === 0 ? 'xray' : 'medical' });
       });
     }
     return evals;
   }
 
   // ── マイルストーン ──────────────────────
-
-  function generateMilestones(risk, isGrowing) {
+  function generateMilestones(risk, totalMonths) {
+    var rk = RISK_KEY_MAP[risk] || 'ex';
+    var labels = I18N.milestone(rk);
+    // 月割り当て
+    var monthsMap = {
+      obs: [1,3,6], ex: [1,3,6,12,18,24,36], br: [1,3,6,12,18,24,30,36],
+      sa: [1,3,6,12,18,24,36], ps: [1,3,6,12,18,24]
+    };
+    var months = monthsMap[rk] || [];
     var ms = [];
-    if (risk === 'postSurgery') {
-      ms = [
-        { month: 1, label: '独歩獲得' },
-        { month: 3, label: '日常生活自立' },
-        { month: 6, label: '軽運動開始' },
-        { month: 12, label: '復学・復職' },
-        { month: 18, label: '有酸素運動再開' },
-        { month: 24, label: 'スポーツ段階的復帰' }
-      ];
-    } else if (risk === 'bracing') {
-      ms = [
-        { month: 1, label: '装具フィッティング完了' },
-        { month: 3, label: '装具装着23時間達成' },
-        { month: 6, label: '自己矯正技術習得' },
-        { month: 12, label: '中間X線評価' },
-        { month: 18, label: '装具内矯正最適化' },
-        { month: 24, label: '装具離脱開始（骨成熟に応じて）' },
-        { month: 30, label: '夜間装具のみへ移行' },
-        { month: 36, label: '装具完全離脱評価' }
-      ];
-    } else {
-      ms = [
-        { month: 1, label: '初期評価完了' },
-        { month: 3, label: '基本矯正技術習得' },
-        { month: 6, label: '自主トレ自立' },
-        { month: 12, label: '年次X線評価' },
-        { month: 18, label: '日常動作統合' },
-        { month: 24, label: '年次評価・プログラム見直し' },
-        { month: 36, label: '3年評価・長期方針決定' }
-      ];
+    for (var i = 0; i < labels.length && i < months.length; i++) {
+      if (months[i] <= totalMonths) ms.push({ month: months[i], label: labels[i] });
     }
     return ms;
   }
 
-  // ── 装具指導 ──────────────────────
-
-  function bracingGuidance(phase, isGrowing) {
+  // ── 装具指導（i18n対応） ──────────────────
+  function getBracingGuidance(phaseId, isGrowing) {
     if (!isGrowing) return null;
-
-    var guidance = {
-      initial: {
-        wearingHours: '1日16-23時間（段階的に増加）',
-        notes: [
-          '装具装着は段階的に開始（初日4時間→2週間で目標時間へ）',
-          '装具内での呼吸エクササイズを毎日実施',
-          '皮膚の発赤・痛みのチェックを毎日行う',
-          '入浴時・運動時に外す場合も矯正姿勢を意識'
-        ]
-      },
-      intermediate: {
-        wearingHours: '1日16-23時間（安定維持）',
-        notes: [
-          '装具のフィッティングを3-4ヶ月ごとに確認',
-          '成長に伴う装具の調整・作り直しの判断',
-          '装具外しでの自己矯正力チェック',
-          '心理的サポート（ピアグループ・カウンセリング）'
-        ]
-      },
-      advanced: {
-        wearingHours: '段階的に短縮（Risserサインに応じて）',
-        notes: [
-          'Risser 4以上で夜間のみへの移行を検討',
-          '装具外しでの矯正保持力を定期評価',
-          '2時間→4時間→夜間のみ→完全離脱の段階',
-          '離脱後のリバウンドに注意'
-        ]
-      },
-      maintenance: {
-        wearingHours: '夜間のみまたは完全離脱',
-        notes: [
-          '離脱後6ヶ月はX線でカーブの安定性を確認',
-          '自主トレプログラムの継続が重要',
-          '成長完了の確認（Risser 5）',
-          'リバウンド兆候があれば装具再開を検討'
-        ]
-      }
-    };
-    return guidance[phase] || null;
+    var data = I18N.bracingGuide(phaseId);
+    if (!data) return null;
+    return { wearingHours: data.h, notes: data.n };
   }
 
-  // ── QOL・心理サポート ──────────────────────
-
-  function generateQolRecommendations(input) {
-    var recs = [];
-    var complications = input.complications || [];
-
-    recs.push({
-      title: '定期的な姿勢チェック',
-      detail: '毎月の写真撮影で姿勢の変化を記録。モチベーション維持に有効。'
+  // ── QOL（i18n対応） ──────────────────────
+  function generateQol(input) {
+    var recs = [], comp = input.complications || [];
+    var keys = ['posture'];
+    if (input.age <= 17) keys.push('school');
+    if (comp.indexOf('psycho') !== -1 || comp.indexOf('appearance') !== -1) keys.push('psycho');
+    if (comp.indexOf('pain') !== -1) keys.push('pain');
+    if (comp.indexOf('respiratory') !== -1) keys.push('resp');
+    if (comp.indexOf('adl') !== -1) keys.push('adl');
+    keys.push('sport');
+    keys.forEach(function (k) {
+      var item = I18N.qolItem(k);
+      if (item) recs.push({ title: item.t, detail: item.d });
     });
-
-    if (input.age <= 17) {
-      recs.push({
-        title: '学校生活の調整',
-        detail: '体育の授業は基本的に参加可能。重い鞄は両肩に均等に。座席位置の配慮を学校に依頼。'
-      });
-    }
-
-    if (complications.indexOf('psycho') !== -1 || complications.indexOf('appearance') !== -1) {
-      recs.push({
-        title: '心理的サポート',
-        detail: '同年代の患者グループとの交流、必要に応じてカウンセリング。ボディイメージへの支援。'
-      });
-    }
-
-    if (complications.indexOf('pain') !== -1) {
-      recs.push({
-        title: '疼痛管理',
-        detail: '運動前後のストレッチを徹底。温熱療法の併用。痛みが持続する場合は主治医に相談。'
-      });
-    }
-
-    if (complications.indexOf('respiratory') !== -1) {
-      recs.push({
-        title: '呼吸機能管理',
-        detail: '呼吸エクササイズを毎日実施。定期的な肺機能検査。有酸素運動で心肺持久力を向上。'
-      });
-    }
-
-    if (complications.indexOf('adl') !== -1) {
-      recs.push({
-        title: 'ADL指導',
-        detail: '日常動作（起き上がり・持ち上げ・長時間座位）の矯正。人間工学に基づいた環境調整。'
-      });
-    }
-
-    recs.push({
-      title: '運動・スポーツ',
-      detail: '水泳（特に背泳ぎ）・ヨガ・ピラティスは推奨。コンタクトスポーツは主治医と相談。体操競技・重量挙げは注意。'
-    });
-
     return recs;
   }
 
-  // ── メイン生成関数 ──────────────────────
+  // ── 通院頻度 ──────────────────────────
+  function visitFreqKey(risk) {
+    var map = { observation:'vf_obs', exercise:'vf_ex', bracing:'vf_brace',
+                surgical_alert:'vf_surg', postSurgery:'vf_post' };
+    return map[risk] || 'vf_ex';
+  }
 
-  /**
-   * プログラム全体を生成
-   * @param {object} input - 全入力値
-   * @returns {object} 生成されたプログラム
-   */
+  // ── カーブタイプラベル ──────────────────────
+  function curveTypeLabelKey(type) {
+    return 'ct_' + type;
+  }
+
+  function treatmentLabelKey(t) {
+    var map = { none:'tx_none', exercise:'tx_exercise', bracing:'tx_bracing', postSurgery:'tx_post' };
+    return map[t] || t;
+  }
+
+  // ── メイン生成 ──────────────────────────
   function generate(input) {
     var risk = classifyRisk(input);
-    var severity = severityBadge(input.cobbAngle);
+    var sev = severityBadge(input.cobbAngle);
     var isGrowing = input.age <= 17;
-    var phases = PHASE_TEMPLATES[risk];
-    var evaluations = generateEvaluationSchedule(risk, isGrowing);
-    var milestones = generateMilestones(risk, isGrowing);
-    var qol = generateQolRecommendations(input);
+    var totalMonths = DURATION_MONTHS[input.duration] || 36;
+    var phases = buildPhases(risk, totalMonths);
+    var evaluations = generateEvals(risk, isGrowing, totalMonths);
+    var milestones = generateMilestones(risk, totalMonths);
+    var qol = generateQol(input);
 
-    // 各フェーズのエクササイズを選択
     var phaseDetails = phases.map(function (phase) {
       var exercises = selectExercises({
-        curveType: input.curveType,
-        phaseId: phase.id,
-        risk: risk,
-        cobbAngle: input.cobbAngle,
-        complications: input.complications
+        curveType: input.curveType, phaseId: phase.id,
+        risk: risk, cobbAngle: input.cobbAngle, complications: input.complications
       });
-
-      var bracing = (risk === 'bracing') ? bracingGuidance(phase.id, isGrowing) : null;
-
-      // フェーズ内の評価ポイント
-      var phaseEvals = evaluations.filter(function (e) {
-        return e.month >= phase.start && e.month <= phase.end;
-      });
-
-      // フェーズ内のマイルストーン
-      var phaseMs = milestones.filter(function (m) {
-        return m.month >= phase.start && m.month <= phase.end;
-      });
-
+      var bg = (risk === 'bracing') ? getBracingGuidance(phase.id, isGrowing) : null;
+      var pe = evaluations.filter(function (e) { return e.month >= phase.start && e.month <= phase.end; });
+      var pm = milestones.filter(function (m) { return m.month >= phase.start && m.month <= phase.end; });
       return {
-        id: phase.id,
-        name: phase.name,
-        startMonth: phase.start,
-        endMonth: phase.end,
-        color: phase.color,
-        goals: phase.goals,
-        clinicExercises: exercises.clinic,
-        homeExercises: exercises.home,
-        bracingGuidance: bracing,
-        evaluations: phaseEvals,
-        milestones: phaseMs
+        id: phase.id, i18nKey: phase.i18nKey, name: phase.name,
+        startMonth: phase.start, endMonth: phase.end, color: phase.color,
+        goals: phase.goals, clinicExercises: exercises.clinic,
+        homeExercises: exercises.home, bracingGuidance: bg,
+        evaluations: pe, milestones: pm
       };
     });
 
-    // 通院頻度
-    var visitFrequency = getVisitFrequency(risk);
-
     return {
       risk: risk,
-      riskLabel: riskLabel(risk),
+      riskLabelKey: riskLabelKey(risk),
       riskColor: riskColor(risk),
-      severity: severity,
-      totalMonths: 36,
-      visitFrequency: visitFrequency,
+      severity: sev,
+      totalMonths: totalMonths,
+      visitFreqKey: visitFreqKey(risk),
       phases: phaseDetails,
       evaluations: evaluations,
       milestones: milestones,
@@ -554,47 +350,14 @@ var ProgramEngine = (function () {
     };
   }
 
-  function getVisitFrequency(risk) {
-    var freq = {
-      observation: '3-6ヶ月ごと',
-      exercise: '週1-2回（初期）→ 月2回（維持期）',
-      bracing: '週1-2回（初期）→ 月1-2回（安定期）',
-      surgical_alert: '週2-3回',
-      postSurgery: '週3-5回（急性期）→ 週1-2回（回復期）→ 月2回（維持期）'
-    };
-    return freq[risk] || '月1回';
-  }
-
-  // ── カーブタイプのラベル ──────────────────────
-
-  function curveTypeLabel(type) {
-    var labels = {
-      thoracic: '胸椎カーブ',
-      thoracolumbar: '胸腰椎カーブ',
-      lumbar: '腰椎カーブ',
-      double: 'ダブルカーブ（S字型）'
-    };
-    return labels[type] || type;
-  }
-
-  function treatmentLabel(treatment) {
-    var labels = {
-      none: '治療なし',
-      exercise: '運動療法のみ',
-      bracing: '装具療法中',
-      postSurgery: '手術後'
-    };
-    return labels[treatment] || treatment;
-  }
-
-  // 公開API
   return {
     generate: generate,
     classifyRisk: classifyRisk,
-    riskLabel: riskLabel,
     riskColor: riskColor,
     severityBadge: severityBadge,
-    curveTypeLabel: curveTypeLabel,
-    treatmentLabel: treatmentLabel
+    curveTypeLabelKey: curveTypeLabelKey,
+    treatmentLabelKey: treatmentLabelKey,
+    resolveTreatment: resolveTreatment,
+    DURATION_MONTHS: DURATION_MONTHS
   };
 })();
