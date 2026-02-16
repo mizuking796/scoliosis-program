@@ -11,8 +11,7 @@
   Router.on('plan', PlanView.render);
   Router.on('progress', ProgressEntryView.render);
 
-  document.addEventListener('DOMContentLoaded', function () {
-    document.documentElement.lang = I18N.getLang();
-    Router.start();
-  });
+  // 動的ローダー経由ではDOMContentLoaded発火済みのため即実行
+  document.documentElement.lang = I18N.getLang();
+  Router.start();
 })();

@@ -74,5 +74,8 @@
   }
 
   update(0);
-  loadAll();
+  loadAll().catch(function (err) {
+    var titleEl = document.querySelector('.loading-title');
+    if (titleEl) titleEl.textContent = 'Load error: ' + err.message;
+  });
 })();
