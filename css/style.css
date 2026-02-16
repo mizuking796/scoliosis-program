@@ -876,18 +876,6 @@ body {
   color: #1A3A4A;
 }
 
-/* エクササイズイラスト */
-.ex-illust-wrap {
-  text-align: center;
-  margin-bottom: 0.6rem;
-}
-
-.ex-illust-wrap .ex-illust {
-  width: 100%;
-  max-width: 220px;
-  height: auto;
-}
-
 .exercise-body {
   padding: 0 0.9rem 0.9rem;
   font-size: 0.82rem;

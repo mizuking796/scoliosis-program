@@ -595,15 +595,12 @@
       var desc = I18N.exField(ex.id, 'd') || ex.description;
       var proc = I18N.exField(ex.id, 'p') || ex.procedure;
       var caut = I18N.exField(ex.id, 'c') || ex.caution;
-      var illust = ExIllust.get(ex.id);
-
       html += '<details class="exercise-card">' +
         '<summary>' +
           '<span class="ex-method-tag ' + ex.method + '">' + methodLabel(ex.method) + '</span>' +
           '<span class="ex-name">' + escHtml(name) + '</span>' +
         '</summary>' +
         '<div class="exercise-body">' +
-          (illust ? '<div class="ex-illust-wrap">' + illust + '</div>' : '') +
           '<p class="ex-desc">' + escHtml(desc) + '</p>' +
           '<div class="ex-prescription">' + prescriptionText(ex) + '</div>' +
           '<ol>' + (Array.isArray(proc) ? proc : ex.procedure).map(function (s) { return '<li>' + escHtml(s) + '</li>'; }).join('') + '</ol>' +
