@@ -1291,38 +1291,93 @@ body {
 .dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  align-items: baseline;
+  margin-bottom: 1.25rem;
 }
 .dashboard-header h1 { font-size: 1.25rem; color: #1A3A4A; }
-.patient-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+.patient-count {
+  font-size: 0.82rem; font-weight: 600; color: #888;
+  background: #EBF5FB; padding: 0.2rem 0.6rem; border-radius: 10px;
 }
-.patient-card {
-  background: #fff;
-  border: 1px solid #D6E4ED;
-  border-radius: 14px;
-  padding: 1rem;
-  cursor: pointer;
+.patient-list {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.p-card {
+  display: flex; background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 14px; overflow: hidden; cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.patient-card:hover {
+.p-card:hover {
   border-color: #2E86AB;
-  box-shadow: 0 2px 8px rgba(46,134,171,0.12);
+  box-shadow: 0 2px 12px rgba(46,134,171,0.1);
 }
-.patient-card-name {
-  font-weight: 600; font-size: 0.95rem; color: #1A3A4A; margin-bottom: 0.3rem;
+.p-card-risk {
+  width: 5px; flex-shrink: 0; border-radius: 14px 0 0 14px;
 }
-.patient-card-info { font-size: 0.78rem; color: #888; line-height: 1.4; }
-.patient-card .risk-badge {
-  display: inline-block; font-size: 0.65rem; font-weight: 600;
-  padding: 0.1rem 0.5rem; border-radius: 10px; color: #fff; margin-top: 0.4rem;
+.p-card-body {
+  flex: 1; padding: 0.9rem 1rem; min-width: 0;
 }
-.dashboard-empty { text-align: center; padding: 4rem 1rem; color: #888; }
-.dashboard-empty h2 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #636E72; }
-.dashboard-empty p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+.p-card-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+.p-card-identity { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.p-card-name {
+  font-size: 1rem; font-weight: 700; color: #1A3A4A;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.p-card-id { font-size: 0.72rem; color: #B0BEC5; }
+.p-card-cobb {
+  font-size: 0.75rem; font-weight: 700; color: #fff;
+  padding: 0.2rem 0.55rem; border-radius: 8px; flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+.p-card-meta {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.p-card-tag {
+  font-size: 0.72rem; color: #636E72; background: #F0F4F8;
+  padding: 0.15rem 0.5rem; border-radius: 6px;
+}
+.p-card-plan {
+  font-size: 0.72rem; font-weight: 600; color: #2E86AB;
+  background: #EBF5FB; padding: 0.15rem 0.5rem; border-radius: 6px;
+}
+.p-card-kpi { margin-bottom: 0.6rem; }
+.p-card-kpi-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.3rem;
+}
+.p-card-kpi-label { font-size: 0.72rem; color: #888; }
+.p-card-kpi-value { font-size: 0.72rem; font-weight: 700; color: #1A3A4A; }
+.p-card-kpi-bar {
+  height: 4px; background: #E8EEF2; border-radius: 2px; overflow: hidden;
+}
+.p-card-kpi-fill {
+  height: 100%; border-radius: 2px; transition: width 0.4s;
+}
+.p-card-actions {
+  display: flex; gap: 0.4rem; align-items: center;
+}
+.p-card-btn-detail {
+  font-size: 0.78rem; font-weight: 600; font-family: inherit;
+  padding: 0.35rem 0.9rem; border: none; border-radius: 8px;
+  background: #2E86AB; color: #fff; cursor: pointer;
+  transition: background 0.2s;
+}
+.p-card-btn-detail:hover { background: #256F8E; }
+.p-card-btn-delete {
+  font-size: 0.75rem; font-family: inherit;
+  width: 28px; height: 28px; border: none; border-radius: 50%;
+  background: none; color: #B0BEC5; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.p-card-btn-delete:hover { background: #FFEBEE; color: #E53935; }
+.dashboard-add { text-align: center; margin-top: 0.5rem; }
+.dashboard-add .btn-primary { width: 100%; }
 
 /* ── Patient Detail ────────────────── */
 .patient-detail-screen { padding-top: 0.5rem; }

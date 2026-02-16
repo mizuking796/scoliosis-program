@@ -50,53 +50,58 @@ var DashboardView = (function () {
     var html = '<div class="dashboard-screen fade-in">' +
       _langSwitcher() +
       '<div class="dashboard-header">' +
-        '<h1 class="dashboard-title">' + t('dash_title') + '</h1>' +
+        '<h1>' + t('dash_title') + '</h1>' +
         '<span class="patient-count">' + patients.length + '/' + PatientStore.MAX_PATIENTS + '</span>' +
       '</div>';
 
-    html += '<div class="patient-cards">';
+    html += '<div class="patient-list">';
     patients.forEach(function (p) {
       var activePlan = p.plans && p.plans[p.activePlanKey];
       var kpi = activePlan ? ProgressTracker.summary(activePlan) : null;
-      var riskColor = ProgramEngine.riskColor(
-        ProgramEngine.classifyRisk({
-          age: p.age, cobbAngle: p.cobbAngle, risser: p.risser,
-          treatment: p.treatment
-        })
-      );
+      var risk = ProgramEngine.classifyRisk({
+        age: p.age, cobbAngle: p.cobbAngle, risser: p.risser,
+        treatment: p.treatment
+      });
+      var riskColor = ProgramEngine.riskColor(risk);
       var sev = ProgramEngine.severityBadge(p.cobbAngle);
 
-      html += '<div class="patient-card" data-patient="' + p.id + '">' +
-        '<div class="patient-card-header">' +
-          '<span class="patient-id">' + p.id + '</span>' +
-          '<span class="patient-name">' + _esc(p.name || t('unnamed')) + '</span>' +
-          '<span class="badge-sm" style="background:' + sev.color + '">' + p.cobbAngle + '\u00B0</span>' +
-        '</div>' +
-        '<div class="patient-card-meta">' +
-          '<span>' + p.age + (I18N.getLang() === 'ja' ? '\u6B73' : '') + ' ' + (p.sex === 'female' ? t('female') : t('male')) + '</span>' +
-          '<span>' + t(ProgramEngine.curveTypeLabelKey(p.curveType)) + '</span>' +
-          '<span class="plan-badge">Plan ' + (p.activePlanKey || '-') + '</span>' +
-        '</div>';
+      html += '<div class="p-card" data-patient="' + p.id + '">' +
+        '<div class="p-card-risk" style="background:' + riskColor + '"></div>' +
+        '<div class="p-card-body">' +
+          '<div class="p-card-top">' +
+            '<div class="p-card-identity">' +
+              '<span class="p-card-name">' + _esc(p.name || t('unnamed')) + '</span>' +
+              '<span class="p-card-id">' + p.id + '</span>' +
+            '</div>' +
+            '<span class="p-card-cobb" style="background:' + sev.color + '">' + p.cobbAngle + '\u00B0</span>' +
+          '</div>' +
+          '<div class="p-card-meta">' +
+            '<span class="p-card-tag">' + p.age + (I18N.getLang() === 'ja' ? '\u6B73' : '') + '</span>' +
+            '<span class="p-card-tag">' + (p.sex === 'female' ? t('female') : t('male')) + '</span>' +
+            '<span class="p-card-tag">' + t(ProgramEngine.curveTypeLabelKey(p.curveType)) + '</span>' +
+            '<span class="p-card-plan">Plan ' + (p.activePlanKey || '-') + '</span>' +
+          '</div>';
 
       if (kpi) {
-        html += '<div class="patient-card-kpi">' +
-          '<div class="kpi-bar">' +
-            '<div class="kpi-bar-fill" style="width:' + kpi.adherence + '%"></div>' +
+        html += '<div class="p-card-kpi">' +
+          '<div class="p-card-kpi-header">' +
+            '<span class="p-card-kpi-label">' + t('kpi_adherence') + '</span>' +
+            '<span class="p-card-kpi-value">' + kpi.adherence + '%</span>' +
           '</div>' +
-          '<span class="kpi-label">' + t('kpi_adherence') + ' ' + kpi.adherence + '%</span>' +
+          '<div class="p-card-kpi-bar"><div class="p-card-kpi-fill" style="width:' + kpi.adherence + '%;background:' + (kpi.adherence >= 80 ? '#4CAF50' : kpi.adherence >= 50 ? '#FF9800' : '#E53935') + '"></div></div>' +
         '</div>';
       }
 
-      html += '<div class="patient-card-actions">' +
-        '<button class="btn-sm" data-view-patient="' + p.id + '">' + t('dash_detail') + '</button>' +
-        '<button class="btn-sm btn-danger-sm" data-delete-patient="' + p.id + '">\u2715</button>' +
+      html += '<div class="p-card-actions">' +
+        '<button class="p-card-btn-detail" data-view-patient="' + p.id + '">' + t('dash_detail') + '</button>' +
+        '<button class="p-card-btn-delete" data-delete-patient="' + p.id + '" title="' + t('dash_confirm_delete') + '">\u2715</button>' +
       '</div>' +
-      '</div>';
+      '</div></div>';
     });
     html += '</div>';
 
     if (PatientStore.canAdd()) {
-      html += '<div class="dashboard-actions">' +
+      html += '<div class="dashboard-add">' +
         '<button class="btn-primary" data-action="new-patient">+ ' + t('dash_add_patient') + '</button>' +
       '</div>';
     }
@@ -110,7 +115,8 @@ var DashboardView = (function () {
     });
 
     app.querySelectorAll('[data-view-patient]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
         Router.navigate('patient', { id: this.getAttribute('data-view-patient') });
       });
     });
