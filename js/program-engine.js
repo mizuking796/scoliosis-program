@@ -2,6 +2,7 @@
    program-engine.js — プログラム生成アルゴリズム
    SOSORT 2016ガイドライン準拠リスク分類 + フェーズ構成
    期間3段階(short/medium/long) + 治療複数選択対応
+   v2: ExerciseRegistry + PlanTemplates対応
    ====================================================== */
 
 'use strict';
@@ -11,7 +12,6 @@ var ProgramEngine = (function () {
   // ── 治療複数選択→単一リスク解決 ──────────────
   function resolveTreatment(treatments) {
     if (!treatments || treatments.length === 0) return 'none';
-    // 優先度: postSurgery > bracing > exercise > none
     if (treatments.indexOf('postSurgery') !== -1) return 'postSurgery';
     if (treatments.indexOf('bracing') !== -1) return 'bracing';
     if (treatments.indexOf('exercise') !== -1) return 'exercise';
@@ -73,7 +73,6 @@ var ProgramEngine = (function () {
     strengthening: '#2E86AB', return: '#66BB6A'
   };
 
-  // riskKey: obs/ex/br/sa/ps  phaseId で i18n参照
   var RISK_KEY_MAP = {
     observation: 'obs', exercise: 'ex', bracing: 'br',
     surgical_alert: 'sa', postSurgery: 'ps'
@@ -91,11 +90,9 @@ var ProgramEngine = (function () {
     var i18nKey = rk + '_' + id;
     var data = I18N.phase(i18nKey);
     return {
-      id: id,
-      i18nKey: i18nKey,
+      id: id, i18nKey: i18nKey,
       name: data ? data.n : id,
-      start: start,
-      end: end,
+      start: start, end: end,
       color: PHASE_COLORS[id] || '#888',
       goals: data ? data.g : []
     };
@@ -138,7 +135,7 @@ var ProgramEngine = (function () {
     ];
   }
 
-  // ── エクササイズ選択 ──────────────────────
+  // ── エクササイズ選択（v2: テンプレート対応） ──────
   function mapPhaseToExercisePhase(phaseId, risk) {
     if (risk === 'postSurgery') return phaseId;
     return { initial:'initial', intermediate:'intermediate', advanced:'advanced', maintenance:'maintenance' }[phaseId] || phaseId;
@@ -147,83 +144,132 @@ var ProgramEngine = (function () {
   function selectExercises(params) {
     var curveType = params.curveType, phaseId = params.phaseId, risk = params.risk;
     var cobb = params.cobbAngle, complications = params.complications || [];
+    var templateKey = params.templateKey || 'A';
     var exPhase = mapPhaseToExercisePhase(phaseId, risk);
 
     if (risk === 'postSurgery') return selectPostSurgeryExercises(exPhase, curveType);
 
-    var pool = EXERCISES.filter(function (ex) {
-      return ex.method !== 'postSurgery' &&
-        ex.curveTypes.indexOf(curveType) !== -1 &&
-        ex.phases.indexOf(exPhase) !== -1;
-    });
     var maxDiff = exPhase === 'initial' ? 2 : 3;
-    pool = pool.filter(function (ex) { return ex.difficulty <= maxDiff; });
-
-    var schrothR = cobb >= 35 ? 0.5 : (cobb >= 25 ? 0.4 : 0.3);
-    var clinicCount = 10, homeCount = 6;
-    var byMethod = { schroth:[], seas:[], core:[], other:[] };
-    pool.forEach(function (ex) {
-      if (ex.method === 'schroth') byMethod.schroth.push(ex);
-      else if (ex.method === 'seas') byMethod.seas.push(ex);
-      else if (ex.method === 'core') byMethod.core.push(ex);
-      else byMethod.other.push(ex);
+    var pool = ExerciseRegistry.filter({
+      curveType: curveType,
+      phase: exPhase,
+      maxDifficulty: maxDiff,
+      excludeMethod: 'postSurgery'
     });
 
+    // テンプレートの重み配分を取得
+    var tmpl = PlanTemplates.get(templateKey);
+    var weights = tmpl ? tmpl.weights : { schroth: 0.4, core: 0.2, seas: 0.15 };
+    var homeWeights = tmpl ? tmpl.homeWeights : { seas: 0.35, stretching: 0.25, breathing: 0.2, core: 0.2 };
+
+    var clinicCount = 10, homeCount = 6;
+
+    // 合併症による優先エクササイズ
     var priorityIds = [];
     if (complications.indexOf('pain') !== -1) priorityIds.push('str-cat-cow','str-child-pose','br-diaphragm');
     if (complications.indexOf('respiratory') !== -1) priorityIds.push('sch-rab','br-diaphragm','br-rib-expansion');
-    if (complications.indexOf('psycho') !== -1) priorityIds.push('seas-mirror','br-diaphragm');
+    if (complications.indexOf('psycho') !== -1) priorityIds.push('seas-mirror','br-diaphragm','yoga-corpse-mindful');
 
+    // Cobb角による重み調整
+    if (cobb >= 35) {
+      // 重症: メイン手法の比率を上げる
+      var mainMethod = _primaryMethod(weights);
+      if (weights[mainMethod]) weights[mainMethod] = Math.min(0.55, weights[mainMethod] + 0.1);
+    }
+
+    // ── 通院エクササイズ ──
     var clinic = [], usedIds = {};
+
+    // 1. 優先エクササイズ挿入
     priorityIds.forEach(function (id) {
       if (clinic.length >= clinicCount) return;
-      var ex = findEx(id, pool);
-      if (ex && !usedIds[ex.id]) { clinic.push(ex); usedIds[ex.id] = true; }
+      var ex = ExerciseRegistry.byId(id);
+      if (ex && !usedIds[ex.id] && _inPool(ex, pool)) { clinic.push(ex); usedIds[ex.id] = true; }
     });
-    var targets = [
-      { list: byMethod.schroth, count: Math.round(clinicCount * schrothR) },
-      { list: byMethod.seas, count: Math.round(clinicCount * 0.25) },
-      { list: byMethod.core, count: Math.round(clinicCount * 0.2) },
-      { list: byMethod.other, count: Math.round(clinicCount * (1 - schrothR - 0.45)) }
-    ];
-    targets.forEach(function (t) {
-      var a = 0;
-      for (var i = 0; i < t.list.length && a < t.count && clinic.length < clinicCount; i++) {
-        if (!usedIds[t.list[i].id]) { clinic.push(t.list[i]); usedIds[t.list[i].id] = true; a++; }
+
+    // 2. 重み配分に基づく選択
+    var methodEntries = _sortedWeightEntries(weights);
+    methodEntries.forEach(function (entry) {
+      var method = entry[0], weight = entry[1];
+      var count = Math.max(1, Math.round(clinicCount * weight));
+      var methodPool = pool.filter(function (e) { return e.method === method && !usedIds[e.id]; });
+      _shuffle(methodPool);
+      var added = 0;
+      for (var i = 0; i < methodPool.length && added < count && clinic.length < clinicCount; i++) {
+        clinic.push(methodPool[i]); usedIds[methodPool[i].id] = true; added++;
       }
     });
 
+    // 3. 残りスロットをプールから充填
+    if (clinic.length < clinicCount) {
+      var remaining = pool.filter(function (e) { return !usedIds[e.id]; });
+      _shuffle(remaining);
+      for (var i = 0; i < remaining.length && clinic.length < clinicCount; i++) {
+        clinic.push(remaining[i]); usedIds[remaining[i].id] = true;
+      }
+    }
+
+    // ── 自主トレーニング ──
     var home = [];
+    var homeMethodEntries = _sortedWeightEntries(homeWeights);
     var homePool = pool.filter(function (ex) { return ex.difficulty <= 2 && !usedIds[ex.id]; });
-    ['seas','stretching','breathing','core'].forEach(function (m) {
-      for (var i = 0; i < homePool.length && home.length < homeCount; i++) {
-        if (homePool[i].method === m && !usedIds[homePool[i].id]) { home.push(homePool[i]); usedIds[homePool[i].id] = true; }
+
+    homeMethodEntries.forEach(function (entry) {
+      var method = entry[0], weight = entry[1];
+      var count = Math.max(1, Math.round(homeCount * weight));
+      var mPool = homePool.filter(function (e) { return e.method === method; });
+      _shuffle(mPool);
+      var added = 0;
+      for (var i = 0; i < mPool.length && added < count && home.length < homeCount; i++) {
+        if (!usedIds[mPool[i].id]) { home.push(mPool[i]); usedIds[mPool[i].id] = true; added++; }
       }
     });
+
+    // 必須自主トレ
     ['seas-self-correction','sch-rab','br-diaphragm'].forEach(function (id) {
       if (home.length >= homeCount) return;
-      var ex = findEx(id, pool);
-      if (ex && !usedIds[ex.id]) home.push(ex);
+      var ex = ExerciseRegistry.byId(id);
+      if (ex && !usedIds[ex.id]) { home.push(ex); usedIds[ex.id] = true; }
     });
+
     return { clinic: clinic, home: home };
   }
 
   function selectPostSurgeryExercises(phase, curveType) {
-    var postEx = EXERCISES.filter(function (ex) { return ex.method === 'postSurgery' && ex.phases.indexOf(phase) !== -1; });
+    var postEx = ExerciseRegistry.filter({ method: 'postSurgery', phase: phase });
     var generalEx = [];
     if (phase !== 'acute') {
       var mp = phase === 'recovery' ? 'initial' : phase === 'strengthening' ? 'intermediate' : 'advanced';
-      generalEx = EXERCISES.filter(function (ex) {
-        return ex.method !== 'postSurgery' && ex.curveTypes.indexOf(curveType) !== -1 &&
-          ex.phases.indexOf(mp) !== -1 && ex.difficulty <= (phase === 'recovery' ? 1 : 2);
+      generalEx = ExerciseRegistry.filter({
+        curveType: curveType, phase: mp,
+        maxDifficulty: phase === 'recovery' ? 1 : 2,
+        excludeMethod: 'postSurgery'
       });
     }
     return { clinic: postEx.concat(generalEx).slice(0, 10), home: generalEx.filter(function (e) { return e.difficulty <= 1; }).slice(0, 4) };
   }
 
-  function findEx(id, pool) {
-    for (var i = 0; i < pool.length; i++) { if (pool[i].id === id) return pool[i]; }
-    return null;
+  function _primaryMethod(weights) {
+    var best = '', bestW = 0;
+    Object.keys(weights).forEach(function (k) { if (weights[k] > bestW) { bestW = weights[k]; best = k; } });
+    return best;
+  }
+
+  function _sortedWeightEntries(weights) {
+    return Object.keys(weights).map(function (k) { return [k, weights[k]]; })
+      .sort(function (a, b) { return b[1] - a[1]; });
+  }
+
+  function _inPool(ex, pool) {
+    for (var i = 0; i < pool.length; i++) { if (pool[i].id === ex.id) return true; }
+    return false;
+  }
+
+  function _shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
   }
 
   // ── 評価スケジュール ──────────────────────
@@ -231,9 +277,7 @@ var ProgramEngine = (function () {
     var evals = [];
     if (risk === 'postSurgery') {
       [1,3,6,12,24,36].forEach(function (m) {
-        if (m <= totalMonths) {
-          evals.push({ month: m, label: m + 'M', type: (m >= 6 && m <= 24) ? 'xray' : 'medical' });
-        }
+        if (m <= totalMonths) evals.push({ month: m, label: m + 'M', type: (m >= 6 && m <= 24) ? 'xray' : 'medical' });
       });
     } else if (isGrowing) {
       for (var m = 4; m <= totalMonths; m += 4) {
@@ -251,7 +295,6 @@ var ProgramEngine = (function () {
   function generateMilestones(risk, totalMonths) {
     var rk = RISK_KEY_MAP[risk] || 'ex';
     var labels = I18N.milestone(rk);
-    // 月割り当て
     var monthsMap = {
       obs: [1,3,6], ex: [1,3,6,12,18,24,36], br: [1,3,6,12,18,24,30,36],
       sa: [1,3,6,12,18,24,36], ps: [1,3,6,12,18,24]
@@ -297,17 +340,15 @@ var ProgramEngine = (function () {
   }
 
   // ── カーブタイプラベル ──────────────────────
-  function curveTypeLabelKey(type) {
-    return 'ct_' + type;
-  }
+  function curveTypeLabelKey(type) { return 'ct_' + type; }
 
   function treatmentLabelKey(t) {
     var map = { none:'tx_none', exercise:'tx_exercise', bracing:'tx_bracing', postSurgery:'tx_post' };
     return map[t] || t;
   }
 
-  // ── メイン生成 ──────────────────────────
-  function generate(input) {
+  // ── メイン生成（v2: templateKey対応） ─────────
+  function generate(input, templateKey) {
     var risk = classifyRisk(input);
     var sev = severityBadge(input.cobbAngle);
     var isGrowing = input.age <= 17;
@@ -320,7 +361,9 @@ var ProgramEngine = (function () {
     var phaseDetails = phases.map(function (phase) {
       var exercises = selectExercises({
         curveType: input.curveType, phaseId: phase.id,
-        risk: risk, cobbAngle: input.cobbAngle, complications: input.complications
+        risk: risk, cobbAngle: input.cobbAngle,
+        complications: input.complications,
+        templateKey: templateKey || 'A'
       });
       var bg = (risk === 'bracing') ? getBracingGuidance(phase.id, isGrowing) : null;
       var pe = evaluations.filter(function (e) { return e.month >= phase.start && e.month <= phase.end; });

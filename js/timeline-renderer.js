@@ -2,6 +2,7 @@
    timeline-renderer.js — タイムラインSVG描画
    フェーズ色分け + マイルストーン + 評価ポイント
    viewBoxベースレスポンシブ
+   v2: 進捗オーバーレイ（現在月マーカー + フェーズ完了）
    ====================================================== */
 
 'use strict';
@@ -10,11 +11,13 @@ var TimelineRenderer = (function () {
 
   var NS = 'http://www.w3.org/2000/svg';
 
-  function render(program) {
+  function render(program, kpi) {
     var totalMonths = program.totalMonths;
     var phases = program.phases;
     var evaluations = program.evaluations;
     var milestones = program.milestones;
+    var currentMonth = kpi ? kpi.currentMonth : 0;
+    var phaseBreakdown = kpi ? kpi.phaseBreakdown : null;
 
     var W = 700;
     var H = 200;
@@ -32,15 +35,29 @@ var TimelineRenderer = (function () {
     });
 
     // ── フェーズバー ──────────────────
-    phases.forEach(function (phase) {
+    phases.forEach(function (phase, idx) {
       var x1 = mx(phase.startMonth - 1);
       var x2 = mx(phase.endMonth);
       var w = x2 - x1;
 
+      // 背景バー（半透明）
       svg.appendChild(createEl('rect', {
         x: x1, y: BAR_Y, width: w, height: BAR_H,
-        rx: 4, fill: phase.color, opacity: '0.85'
+        rx: 4, fill: phase.color, opacity: '0.35'
       }));
+
+      // 進捗塗りつぶし
+      var fillPct = 0;
+      if (phaseBreakdown && phaseBreakdown[idx]) {
+        fillPct = phaseBreakdown[idx].percentComplete / 100;
+      }
+      if (fillPct > 0) {
+        var fillW = w * Math.min(1, fillPct);
+        svg.appendChild(createEl('rect', {
+          x: x1, y: BAR_Y, width: fillW, height: BAR_H,
+          rx: 4, fill: phase.color, opacity: '0.85'
+        }));
+      }
 
       var cx = x1 + w / 2;
       var shortName = phase.name.replace(/（.*）/, '').replace(/\(.*\)/, '');
@@ -55,7 +72,6 @@ var TimelineRenderer = (function () {
     // ── 月目盛り（バー上部、フェーズ境界のみ） ──
     var scaleMonths = [0];
     phases.forEach(function (p) { scaleMonths.push(p.endMonth); });
-    // 重複除去
     var seen = {};
     scaleMonths = scaleMonths.filter(function (m) {
       if (seen[m]) return false;
@@ -74,6 +90,25 @@ var TimelineRenderer = (function () {
         'font-size': '9', fill: '#888', 'text-anchor': 'middle'
       }));
     });
+
+    // ── 現在月マーカー ──────────────────
+    if (currentMonth > 0 && currentMonth <= totalMonths) {
+      var nowX = mx(currentMonth);
+      // 縦線
+      svg.appendChild(createEl('line', {
+        x1: nowX, y1: BAR_Y - 4, x2: nowX, y2: BAR_Y + BAR_H + 4,
+        stroke: '#FF5722', 'stroke-width': 2
+      }));
+      // 三角マーカー
+      svg.appendChild(createEl('polygon', {
+        points: (nowX - 5) + ',' + (BAR_Y - 6) + ' ' + (nowX + 5) + ',' + (BAR_Y - 6) + ' ' + nowX + ',' + (BAR_Y - 1),
+        fill: '#FF5722'
+      }));
+      // ラベル
+      svg.appendChild(createText(nowX, BAR_Y - 10, I18N.t('tl_now') || 'Now', {
+        'font-size': '8', fill: '#FF5722', 'text-anchor': 'middle', 'font-weight': 'bold'
+      }));
+    }
 
     // ── マイルストーン（バー上、目盛りのさらに上） ──
     var msBaseY = BAR_Y - 28;
@@ -107,7 +142,6 @@ var TimelineRenderer = (function () {
         fill: isXray ? '#E53935' : '#2E86AB'
       }));
 
-      // ラベル（近すぎるものはスキップ）
       if (x - prevLabelX >= MIN_LABEL_GAP) {
         svg.appendChild(createText(x, evalBaseY + 14, ev.month + I18N.t('dur_m'), {
           'font-size': '8', fill: '#666', 'text-anchor': 'middle'
@@ -121,14 +155,15 @@ var TimelineRenderer = (function () {
     var items = [
       { color: '#2E86AB', key: 'tl_eval' },
       { color: '#E53935', key: 'tl_xray' },
-      { color: '#7E57C2', key: 'tl_ms' }
+      { color: '#7E57C2', key: 'tl_ms' },
+      { color: '#FF5722', key: 'tl_now' }
     ];
     var lx = PAD_LEFT;
     items.forEach(function (item) {
       svg.appendChild(createEl('circle', {
         cx: lx, cy: legendY, r: 4, fill: item.color
       }));
-      svg.appendChild(createText(lx + 8, legendY + 3.5, I18N.t(item.key), {
+      svg.appendChild(createText(lx + 8, legendY + 3.5, I18N.t(item.key) || item.key, {
         'font-size': '9', fill: '#666', 'text-anchor': 'start'
       }));
       lx += 90;

@@ -1208,3 +1208,287 @@ body {
 .print-header {
   display: none;
 }
+
+/* ══════════════════════════════════════
+   v2: 拡張スタイル
+   ══════════════════════════════════════ */
+
+/* ── ボタン追加 ──────────────────────── */
+.btn-sm {
+  font-size: 0.8rem;
+  font-family: inherit;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #D6E4ED;
+  border-radius: 8px;
+  background: #fff;
+  color: #2E86AB;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-sm:hover { background: #EBF5FB; }
+.btn-danger-sm { border-color: #E53935; color: #E53935; }
+.btn-danger-sm:hover { background: #FFEBEE; }
+
+/* ── Dashboard ─────────────────────── */
+.dashboard-screen { padding-top: 0.5rem; }
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.dashboard-header h1 { font-size: 1.25rem; color: #1A3A4A; }
+.patient-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.patient-card {
+  background: #fff;
+  border: 1px solid #D6E4ED;
+  border-radius: 14px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.patient-card:hover {
+  border-color: #2E86AB;
+  box-shadow: 0 2px 8px rgba(46,134,171,0.12);
+}
+.patient-card-name {
+  font-weight: 600; font-size: 0.95rem; color: #1A3A4A; margin-bottom: 0.3rem;
+}
+.patient-card-info { font-size: 0.78rem; color: #888; line-height: 1.4; }
+.patient-card .risk-badge {
+  display: inline-block; font-size: 0.65rem; font-weight: 600;
+  padding: 0.1rem 0.5rem; border-radius: 10px; color: #fff; margin-top: 0.4rem;
+}
+.dashboard-empty { text-align: center; padding: 4rem 1rem; color: #888; }
+.dashboard-empty h2 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #636E72; }
+.dashboard-empty p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+/* ── Patient Detail ────────────────── */
+.patient-detail-screen { padding-top: 0.5rem; }
+.detail-header {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
+}
+.detail-header h1 { font-size: 1.2rem; color: #1A3A4A; }
+.detail-demographics {
+  background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem;
+}
+.demo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; }
+.demo-item { text-align: center; }
+.demo-label { display: block; font-size: 0.7rem; color: #888; margin-bottom: 0.15rem; }
+.demo-value { font-size: 0.9rem; font-weight: 600; color: #1A3A4A; }
+.demo-badges { text-align: center; margin-top: 0.75rem; }
+
+/* ── KPI ───────────────────────────── */
+.kpi-dashboard { margin-bottom: 1.5rem; }
+.kpi-dashboard h3 { font-size: 1rem; color: #1A3A4A; margin-bottom: 0.75rem; }
+.kpi-grid, .kpi-summary {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+}
+.kpi-card {
+  background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 12px; padding: 0.85rem; text-align: center;
+}
+.kpi-value { font-size: 1.4rem; font-weight: 700; }
+.kpi-label-text { font-size: 0.72rem; color: #888; margin-top: 0.15rem; }
+.kpi-bar {
+  height: 4px; background: #E8EEF2; border-radius: 2px;
+  margin-top: 0.5rem; overflow: hidden;
+}
+.kpi-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+
+/* ── Phase Progress ────────────────── */
+.phase-progress-section { margin-bottom: 1.5rem; }
+.phase-progress-section h4 { font-size: 0.9rem; color: #1A3A4A; margin-bottom: 0.5rem; }
+.phase-progress-row {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0;
+}
+.phase-progress-label { font-size: 0.8rem; min-width: 120px; color: #444; }
+.phase-progress-bar {
+  flex: 1; height: 8px; background: #E8EEF2;
+  border-radius: 4px; overflow: hidden;
+}
+.phase-progress-fill {
+  height: 100%; background: #2E86AB;
+  border-radius: 4px; transition: width 0.4s;
+}
+.phase-progress-pct {
+  font-size: 0.75rem; font-weight: 600; color: #636E72;
+  min-width: 36px; text-align: right;
+}
+
+/* ── Cobb History ──────────────────── */
+.cobb-history-section {
+  background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem;
+}
+.cobb-history-section h3 { font-size: 1rem; color: #1A3A4A; margin-bottom: 0.75rem; }
+.cobb-trend { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.cobb-initial, .cobb-latest { font-size: 0.85rem; color: #636E72; }
+.cobb-change { font-weight: 600; font-size: 0.85rem; }
+.cobb-change.improved { color: #4CAF50; }
+.cobb-change.worsened { color: #E53935; }
+.cobb-chart svg { width: 100%; height: auto; }
+.cobb-actions { margin-top: 0.5rem; text-align: center; }
+
+/* ── Plan Tabs ─────────────────────── */
+.plan-view-header {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
+}
+.plan-view-header h2 { font-size: 1.1rem; color: #1A3A4A; }
+.plan-tabs { display: flex; gap: 0.4rem; margin-bottom: 1rem; }
+.plan-tab {
+  flex: 1; padding: 0.5rem; font-size: 0.8rem; font-weight: 600;
+  font-family: inherit; border: 2px solid #D6E4ED; border-radius: 10px;
+  background: #fff; color: #636E72; cursor: pointer; text-align: center;
+  transition: all 0.2s;
+}
+.plan-tab.active { border-color: #2E86AB; background: #2E86AB; color: #fff; }
+.plan-tab.disabled { opacity: 0.4; cursor: default; }
+.plan-template-info {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;
+}
+.plan-desc { font-size: 0.82rem; color: #636E72; }
+
+/* ── Plan Tab Cards ────────────────── */
+.plan-section { margin-bottom: 1.5rem; }
+.plan-section h3 { font-size: 1rem; color: #1A3A4A; margin-bottom: 0.75rem; }
+.plan-tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.plan-tab-card {
+  background: #fff; border: 2px solid #D6E4ED; border-radius: 14px;
+  padding: 1rem; cursor: pointer; transition: all 0.2s;
+}
+.plan-tab-card:hover { border-color: #2E86AB; }
+.plan-tab-card.active { border-color: #2E86AB; background: #EBF5FB; }
+.plan-tab-card.empty { opacity: 0.5; cursor: default; }
+.plan-tab-card-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;
+}
+.plan-letter { font-weight: 700; font-size: 0.9rem; color: #1A3A4A; }
+.plan-active-badge { font-size: 0.65rem; color: #FF9800; font-weight: 600; }
+.plan-tab-card-name { font-size: 0.8rem; font-weight: 600; color: #2E86AB; margin-bottom: 0.2rem; }
+.plan-tab-card-desc { font-size: 0.72rem; color: #888; line-height: 1.4; }
+
+/* ── Switch History ────────────────── */
+.switch-history-section { margin-bottom: 1.5rem; }
+.switch-history-section h4 { font-size: 0.9rem; color: #1A3A4A; margin-bottom: 0.5rem; }
+.switch-history-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.switch-history-item {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.82rem; color: #444; padding: 0.4rem 0; border-bottom: 1px solid #F0F4F8;
+}
+.switch-date { font-size: 0.72rem; color: #888; min-width: 80px; }
+.switch-reason { font-size: 0.72rem; color: #636E72; font-style: italic; }
+
+/* ── Progress Entry ────────────────── */
+.progress-entry-screen { padding-top: 0.5rem; }
+.progress-header {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
+}
+.progress-header h2 { font-size: 1.1rem; color: #1A3A4A; }
+.progress-header p { font-size: 0.82rem; color: #888; }
+.session-info-card {
+  background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+}
+.session-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; }
+.session-meta-item label {
+  display: block; font-size: 0.72rem; color: #888; margin-bottom: 0.25rem;
+}
+.session-meta-item input,
+.session-meta-item select {
+  width: 100%; padding: 0.4rem 0.5rem; font-size: 0.85rem;
+  font-family: inherit; border: 1px solid #D6E4ED; border-radius: 8px;
+}
+.phase-indicator {
+  display: inline-block; padding: 0.25rem 0.6rem; border-radius: 8px;
+  font-size: 0.8rem; font-weight: 600; color: #fff;
+}
+.exercise-checklist {
+  background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+}
+.exercise-checklist h3 { font-size: 0.95rem; color: #1A3A4A; margin-bottom: 0.75rem; }
+.exercise-check-item {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0;
+  border-bottom: 1px solid #F0F4F8; cursor: pointer; font-size: 0.85rem;
+}
+.exercise-check-item:last-of-type { border-bottom: none; }
+.exercise-check-item input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: #2E86AB;
+}
+.ex-check-name { flex: 1; color: #2D3436; }
+.check-actions {
+  display: flex; gap: 0.5rem; margin-top: 0.75rem;
+  padding-top: 0.5rem; border-top: 1px solid #F0F4F8;
+}
+.session-notes { margin-bottom: 1rem; }
+.session-notes label {
+  display: block; font-size: 0.85rem; font-weight: 600; color: #444; margin-bottom: 0.3rem;
+}
+.session-notes textarea {
+  width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem;
+  font-family: inherit; border: 1px solid #D6E4ED; border-radius: 10px; resize: vertical;
+}
+.progress-actions { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.session-history {
+  background: #fff; border: 1px solid #D6E4ED;
+  border-radius: 14px; padding: 1rem;
+}
+.session-history h3 { font-size: 0.95rem; color: #1A3A4A; margin-bottom: 0.75rem; }
+.session-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.session-item {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.82rem; padding: 0.4rem 0; border-bottom: 1px solid #F0F4F8;
+}
+.session-item:last-child { border-bottom: none; }
+.session-date { font-size: 0.75rem; color: #888; min-width: 70px; }
+.session-setting-badge {
+  font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 6px;
+  background: #EBF5FB; color: #2E86AB;
+}
+.session-completion { font-size: 0.78rem; color: #444; }
+.session-note-preview { font-size: 0.72rem; color: #888; font-style: italic; }
+.detail-actions {
+  display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; margin-bottom: 1rem;
+}
+
+/* ── Method Tags (new) ─────────────── */
+.ex-method-tag.lyon       { background: #558B2F; }
+.ex-method-tag.bspts      { background: #AD1457; }
+.ex-method-tag.dobomed    { background: #4527A0; }
+.ex-method-tag.sideShift  { background: #00695C; }
+.ex-method-tag.fits       { background: #283593; }
+.ex-method-tag.pilates    { background: #D84315; }
+.ex-method-tag.yoga       { background: #7B1FA2; }
+.ex-method-tag.taiChi     { background: #1B5E20; }
+.ex-method-tag.manual     { background: #4E342E; }
+.ex-method-tag.aquatic    { background: #01579B; }
+.ex-method-tag.psychosocial { background: #880E4F; }
+
+/* ── v2 Responsive ─────────────────── */
+@media (max-width: 480px) {
+  .patient-grid { grid-template-columns: 1fr; }
+  .demo-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-grid, .kpi-summary { grid-template-columns: 1fr; }
+  .plan-tab-grid { grid-template-columns: 1fr; }
+  .session-meta { grid-template-columns: 1fr; }
+  .phase-progress-label { min-width: 80px; }
+}
+
+/* ── v2 Print ──────────────────────── */
+@media print {
+  .dashboard-screen,
+  .patient-detail-screen,
+  .progress-entry-screen,
+  .plan-tabs,
+  .kpi-summary,
+  .session-history,
+  .detail-actions,
+  .progress-actions,
+  .cobb-actions { display: none !important; }
+}

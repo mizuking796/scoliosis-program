@@ -16,7 +16,7 @@ var I18N = (function () {
       title: '側弯症リハビリプログラム\nジェネレーター',
       intro_sub: '患者情報を入力すると、Schroth法・SEASを中心とした\n最大36ヶ月間のフェーズ別運動療法プログラムを\n自動生成します。',
       feat1: 'SOSORT 2016ガイドライン準拠のリスク分類',
-      feat2: '40種以上のエビデンスベース運動メニュー',
+      feat2: '100種以上のエビデンスベース運動メニュー',
       feat3: 'フェーズ別タイムライン表示',
       feat4: '評価スケジュール・装具指導・心理サポート',
       feat5: '印刷対応のプログラム出力',
@@ -89,7 +89,53 @@ var I18N = (function () {
       // duration labels
       dur_months: 'ヶ月', dur_m: 'M',
       // timeline legend
-      tl_eval: '経過観察', tl_xray: 'X線評価', tl_ms: 'マイルストーン', tl_start: '開始'
+      tl_eval: '経過観察', tl_xray: 'X線評価', tl_ms: 'マイルストーン', tl_start: '開始',
+      tl_now: '現在',
+      // v2: dashboard
+      dash_title: '患者一覧', dash_add_patient: '新規患者を追加',
+      dash_detail: '詳細', dash_confirm_delete: 'この患者データを削除しますか？',
+      unnamed: '名前未設定', patient_name: '患者名', patient_name_ph: '患者名を入力',
+      dash_empty_title: '患者データがありません', dash_max_reached: '患者数が上限（10名）に達しています',
+      dash_empty_msg: '「新規患者を追加」ボタンからウィザードを開始してください。',
+      wizard_complete: 'プログラム生成完了', wizard_complete_desc: '4プランが生成されました。患者詳細画面で確認できます。',
+      wizard_view_patient: '患者詳細を見る',
+      // v2: patient detail
+      detail_kpi: 'KPIダッシュボード', detail_phase_progress: 'フェーズ進捗',
+      detail_cobb_history: 'Cobb角推移',
+      detail_cobb_initial: '初回', detail_cobb_latest: '最新',
+      detail_add_cobb: 'Cobb角を追加',
+      detail_cobb_prompt: 'Cobb角度を入力（0-100）',
+      detail_cobb_note: 'メモ（任意）',
+      detail_plans: 'プラン一覧', detail_switch_history: 'プラン変更履歴',
+      detail_regenerate: 'プログラム再生成', detail_delete: 'この患者を削除',
+      // v2: KPI
+      kpi_adherence: 'アドヒアランス', kpi_exercise_completion: 'エクササイズ完遂率',
+      kpi_sessions: 'セッション数', kpi_phase: 'フェーズ進捗',
+      // v2: plan view
+      plan_active: 'アクティブ', plan_record_session: 'セッション記録',
+      plan_activate: 'このプランをアクティブに',
+      plan_switch_reason: '変更理由を入力してください',
+      // v2: progress entry
+      prog_title: 'セッション記録', prog_date: '日付', prog_setting: '実施場所',
+      prog_clinic: '通院', prog_home: '自宅', prog_phase: 'フェーズ',
+      prog_exercises: 'エクササイズ',
+      prog_check_all: '全選択', prog_uncheck_all: '全解除',
+      prog_notes: 'メモ', prog_notes_ph: 'セッションの様子をメモ...',
+      prog_save: '保存', prog_saved: '保存しました ✓', prog_history: 'セッション履歴',
+      // v2: method labels (new)
+      m_lyon: 'Lyon法', m_bspts: 'BSPTS', m_dobomed: 'DoboMed',
+      m_sideshift: 'Side-Shift', m_fits: 'FITS',
+      m_pilates: 'ピラティス', m_yoga: 'ヨガ', m_taichi: '太極拳',
+      m_manual: '徒手療法', m_aquatic: '水中療法', m_psycho: '心理社会的',
+      // v2: plan template names
+      plan_a_name: 'Schroth重点プラン',
+      plan_a_desc: '伝統的集中型。Schroth法を中心に矯正効果を最大化。',
+      plan_b_name: 'SEAS機能統合プラン',
+      plan_b_desc: '自主トレ重視。SEAS法で日常生活への統合を促進。',
+      plan_c_name: '運動統合プラン',
+      plan_c_desc: '患者フレンドリー。ピラティス・ヨガを活用した楽しい運動。',
+      plan_d_name: '包括マルチモーダルプラン',
+      plan_d_desc: '全手技バランス。水中療法・筋膜リリース・心理支援を含む。'
     },
 
     'zh-CN': {
@@ -98,7 +144,7 @@ var I18N = (function () {
       title: '脊柱侧弯康复方案\n生成器',
       intro_sub: '输入患者信息后，将自动生成以Schroth法和SEAS为核心的\n最长36个月分阶段运动治疗方案。',
       feat1: '符合SOSORT 2016指南的风险分类',
-      feat2: '40余种循证运动项目',
+      feat2: '100余种循证运动项目',
       feat3: '分阶段时间轴展示',
       feat4: '评估计划·支具指导·心理支持',
       feat5: '可打印的方案输出',
@@ -158,7 +204,44 @@ var I18N = (function () {
       m_schroth: 'Schroth', m_seas: 'SEAS', m_core: '核心',
       m_stretch: '拉伸', m_breath: '呼吸', m_post: '术后',
       dur_months: '个月', dur_m: 'M',
-      tl_eval: '随访', tl_xray: 'X线评估', tl_ms: '里程碑', tl_start: '开始'
+      tl_eval: '随访', tl_xray: 'X线评估', tl_ms: '里程碑', tl_start: '开始',
+      tl_now: '当前',
+      dash_title: '患者列表', dash_add_patient: '添加新患者',
+      dash_detail: '详情', dash_confirm_delete: '确定要删除该患者数据吗？',
+      unnamed: '未命名', patient_name: '患者姓名', patient_name_ph: '请输入患者姓名',
+      dash_empty_title: '暂无患者数据', dash_max_reached: '患者数已达上限（10名）',
+      dash_empty_msg: '请点击"添加新患者"按钮开始。',
+      wizard_complete: '程序生成完成', wizard_complete_desc: '已生成4个方案，可在患者详情页查看。',
+      wizard_view_patient: '查看患者详情',
+      detail_kpi: 'KPI仪表板', detail_phase_progress: '阶段进度',
+      detail_cobb_history: 'Cobb角变化',
+      detail_cobb_initial: '初次', detail_cobb_latest: '最新',
+      detail_add_cobb: '添加Cobb角', detail_cobb_prompt: '请输入Cobb角度（0-100）',
+      detail_cobb_note: '备注（可选）',
+      detail_plans: '方案列表', detail_switch_history: '方案变更记录',
+      detail_regenerate: '重新生成方案', detail_delete: '删除该患者',
+      kpi_adherence: '依从性', kpi_exercise_completion: '训练完成率',
+      kpi_sessions: '训练次数', kpi_phase: '阶段进度',
+      plan_active: '当前方案', plan_record_session: '记录训练',
+      plan_activate: '激活此方案', plan_switch_reason: '请输入变更原因',
+      prog_title: '训练记录', prog_date: '日期', prog_setting: '训练地点',
+      prog_clinic: '门诊', prog_home: '家庭', prog_phase: '阶段',
+      prog_exercises: '训练项目',
+      prog_check_all: '全选', prog_uncheck_all: '取消全选',
+      prog_notes: '备注', prog_notes_ph: '记录训练情况...',
+      prog_save: '保存', prog_saved: '已保存 ✓', prog_history: '训练记录',
+      m_lyon: 'Lyon法', m_bspts: 'BSPTS', m_dobomed: 'DoboMed',
+      m_sideshift: 'Side-Shift', m_fits: 'FITS',
+      m_pilates: '普拉提', m_yoga: '瑜伽', m_taichi: '太极拳',
+      m_manual: '徒手疗法', m_aquatic: '水中疗法', m_psycho: '心理社会',
+      plan_a_name: 'Schroth重点方案',
+      plan_a_desc: '传统集中型。以Schroth法为核心最大化矫正效果。',
+      plan_b_name: 'SEAS功能整合方案',
+      plan_b_desc: '注重自主训练。通过SEAS法促进日常生活整合。',
+      plan_c_name: '运动整合方案',
+      plan_c_desc: '患者友好型。活用普拉提·瑜伽的趣味运动。',
+      plan_d_name: '综合多模式方案',
+      plan_d_desc: '全手技均衡。含水中疗法·筋膜松解·心理支持。'
     },
 
     'zh-TW': {
@@ -167,7 +250,7 @@ var I18N = (function () {
       title: '脊柱側彎康復方案\n生成器',
       intro_sub: '輸入患者資訊後，將自動生成以Schroth法和SEAS為核心的\n最長36個月分階段運動治療方案。',
       feat1: '符合SOSORT 2016指南的風險分類',
-      feat2: '40餘種循證運動項目',
+      feat2: '100餘種循證運動項目',
       feat3: '分階段時間軸展示',
       feat4: '評估計劃·支具指導·心理支持',
       feat5: '可列印的方案輸出',
@@ -227,7 +310,44 @@ var I18N = (function () {
       m_schroth: 'Schroth', m_seas: 'SEAS', m_core: '核心',
       m_stretch: '拉伸', m_breath: '呼吸', m_post: '術後',
       dur_months: '個月', dur_m: 'M',
-      tl_eval: '隨訪', tl_xray: 'X線評估', tl_ms: '里程碑', tl_start: '開始'
+      tl_eval: '隨訪', tl_xray: 'X線評估', tl_ms: '里程碑', tl_start: '開始',
+      tl_now: '當前',
+      dash_title: '患者列表', dash_add_patient: '新增患者',
+      dash_detail: '詳情', dash_confirm_delete: '確定要刪除該患者資料嗎？',
+      unnamed: '未命名', patient_name: '患者姓名', patient_name_ph: '請輸入患者姓名',
+      dash_empty_title: '暫無患者資料', dash_max_reached: '患者數已達上限（10名）',
+      dash_empty_msg: '請點擊「新增患者」按鈕開始。',
+      wizard_complete: '程式生成完成', wizard_complete_desc: '已生成4個方案，可在患者詳情頁查看。',
+      wizard_view_patient: '查看患者詳情',
+      detail_kpi: 'KPI儀表板', detail_phase_progress: '階段進度',
+      detail_cobb_history: 'Cobb角變化',
+      detail_cobb_initial: '初次', detail_cobb_latest: '最新',
+      detail_add_cobb: '新增Cobb角', detail_cobb_prompt: '請輸入Cobb角度（0-100）',
+      detail_cobb_note: '備註（可選）',
+      detail_plans: '方案列表', detail_switch_history: '方案變更記錄',
+      detail_regenerate: '重新生成方案', detail_delete: '刪除該患者',
+      kpi_adherence: '依從性', kpi_exercise_completion: '訓練完成率',
+      kpi_sessions: '訓練次數', kpi_phase: '階段進度',
+      plan_active: '當前方案', plan_record_session: '記錄訓練',
+      plan_activate: '啟用此方案', plan_switch_reason: '請輸入變更原因',
+      prog_title: '訓練記錄', prog_date: '日期', prog_setting: '訓練地點',
+      prog_clinic: '門診', prog_home: '居家', prog_phase: '階段',
+      prog_exercises: '訓練項目',
+      prog_check_all: '全選', prog_uncheck_all: '取消全選',
+      prog_notes: '備註', prog_notes_ph: '記錄訓練情況...',
+      prog_save: '儲存', prog_saved: '已儲存 ✓', prog_history: '訓練記錄',
+      m_lyon: 'Lyon法', m_bspts: 'BSPTS', m_dobomed: 'DoboMed',
+      m_sideshift: 'Side-Shift', m_fits: 'FITS',
+      m_pilates: '普拉提', m_yoga: '瑜伽', m_taichi: '太極拳',
+      m_manual: '徒手療法', m_aquatic: '水中療法', m_psycho: '心理社會',
+      plan_a_name: 'Schroth重點方案',
+      plan_a_desc: '傳統集中型。以Schroth法為核心最大化矯正效果。',
+      plan_b_name: 'SEAS功能整合方案',
+      plan_b_desc: '注重自主訓練。透過SEAS法促進日常生活整合。',
+      plan_c_name: '運動整合方案',
+      plan_c_desc: '患者友好型。活用普拉提·瑜伽的趣味運動。',
+      plan_d_name: '綜合多模式方案',
+      plan_d_desc: '全手技均衡。含水中療法·筋膜鬆解·心理支持。'
     }
   };
 
@@ -503,6 +623,11 @@ var I18N = (function () {
     qolItem: function (key) {
       var d = qol[lang] || qol.ja;
       return d[key] || qol.ja[key] || null;
+    },
+    registerEx: function (l, data) {
+      if (!ex[l]) ex[l] = {};
+      var keys = Object.keys(data);
+      for (var i = 0; i < keys.length; i++) ex[l][keys[i]] = data[keys[i]];
     }
   };
 })();
