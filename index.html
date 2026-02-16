@@ -11,50 +11,13 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="loading-overlay">
+    <div class="loading-icon">🦴</div>
+    <div class="loading-title">Loading...</div>
+    <div class="loading-bar-wrap"><div class="loading-bar-fill" id="loading-bar"></div></div>
+    <div class="loading-pct" id="loading-pct">0%</div>
+  </div>
   <div id="app"></div>
-
-  <!-- i18n -->
-  <script src="js/i18n.js"></script>
-
-  <!-- Exercise Registry + 17 method files -->
-  <script src="js/exercises/_registry.js"></script>
-  <script src="js/exercises/schroth.js"></script>
-  <script src="js/exercises/seas.js"></script>
-  <script src="js/exercises/core.js"></script>
-  <script src="js/exercises/stretching.js"></script>
-  <script src="js/exercises/breathing.js"></script>
-  <script src="js/exercises/post-surgery.js"></script>
-  <script src="js/exercises/lyon.js"></script>
-  <script src="js/exercises/bspts.js"></script>
-  <script src="js/exercises/dobomed.js"></script>
-  <script src="js/exercises/side-shift.js"></script>
-  <script src="js/exercises/fits.js"></script>
-  <script src="js/exercises/pilates.js"></script>
-  <script src="js/exercises/yoga.js"></script>
-  <script src="js/exercises/tai-chi.js"></script>
-  <script src="js/exercises/manual.js"></script>
-  <script src="js/exercises/aquatic.js"></script>
-  <script src="js/exercises/psychosocial.js"></script>
-
-  <!-- Exercise translations (zh-CN/zh-TW for new exercises) -->
-  <script src="js/i18n-exercises.js"></script>
-
-  <!-- Infrastructure -->
-  <script src="js/plan-templates.js"></script>
-  <script src="js/program-engine.js"></script>
-  <script src="js/patient-store.js"></script>
-  <script src="js/progress-tracker.js"></script>
-  <script src="js/timeline-renderer.js"></script>
-  <script src="js/router.js"></script>
-
-  <!-- Views -->
-  <script src="js/views/dashboard.js"></script>
-  <script src="js/views/plan-wizard.js"></script>
-  <script src="js/views/plan-view.js"></script>
-  <script src="js/views/patient-detail.js"></script>
-  <script src="js/views/progress-entry.js"></script>
-
-  <!-- Bootstrap -->
-  <script src="js/app.js"></script>
+  <script src="js/loader.js"></script>
 </body>
 </html>
