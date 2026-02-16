@@ -419,12 +419,12 @@ body {
 /* 期間オプション */
 .dur-option {
   position: relative;
-  padding-left: 4.5rem;
+  padding-left: 5.5rem;
 }
 
 .dur-months {
   position: absolute;
-  left: 1.25rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.1rem;
