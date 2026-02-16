@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>取扱説明書 — 側弯症リハビリプログラムジェネレーター v2.0</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      color: #2D3436; background: #fff; line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    .manual-hero {
+      background: linear-gradient(135deg, #1A3A4A 0%, #2E86AB 100%);
+      color: #fff; padding: 3rem 1.5rem 2.5rem; text-align: center;
+    }
+    .manual-hero h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .manual-hero .sub { font-size: 0.92rem; opacity: 0.85; margin-bottom: 1rem; }
+    .manual-hero .ver { font-size: 0.75rem; opacity: 0.6; }
+
+    /* ── Layout ── */
+    .manual-body { max-width: 720px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+
+    /* ── TOC ── */
+    .toc {
+      background: #F5F9FC; border: 1px solid #D6E4ED; border-radius: 14px;
+      padding: 1.25rem 1.5rem; margin: 2rem 0;
+    }
+    .toc h2 { font-size: 1rem; color: #1A3A4A; margin-bottom: 0.75rem; }
+    .toc ol { padding-left: 1.5rem; }
+    .toc li { margin-bottom: 0.35rem; }
+    .toc a { color: #2E86AB; text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Sections ── */
+    .section { margin-top: 2.5rem; }
+    .section h2 {
+      font-size: 1.2rem; color: #1A3A4A; margin-bottom: 0.3rem;
+      padding-bottom: 0.4rem; border-bottom: 2px solid #2E86AB;
+    }
+    .section h3 {
+      font-size: 1rem; color: #2E86AB; margin-top: 1.5rem; margin-bottom: 0.5rem;
+    }
+    .section p, .section li { font-size: 0.88rem; }
+    .section ul, .section ol { padding-left: 1.5rem; margin-top: 0.3rem; margin-bottom: 0.5rem; }
+    .section li { margin-bottom: 0.25rem; }
+
+    /* ── Screen mockup ── */
+    .screen-wrap {
+      margin: 1.25rem 0;
+      border: 1px solid #D6E4ED;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .screen-bar {
+      background: #F0F4F8; padding: 0.4rem 0.75rem;
+      display: flex; align-items: center; gap: 0.35rem;
+      border-bottom: 1px solid #D6E4ED;
+    }
+    .screen-bar .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .screen-bar .dot.r { background: #FF5F57; }
+    .screen-bar .dot.y { background: #FFBD2E; }
+    .screen-bar .dot.g { background: #27C93F; }
+    .screen-bar .title {
+      flex: 1; text-align: center; font-size: 0.7rem; color: #888;
+    }
+    .screen-body {
+      background: #F5F9FC; padding: 1.25rem; min-height: 120px;
+    }
+
+    /* ── Inside screen elements ── */
+    .s-lang {
+      display: flex; justify-content: flex-end; gap: 0.25rem; margin-bottom: 0.6rem;
+    }
+    .s-lang span {
+      font-size: 0.65rem; padding: 0.15rem 0.45rem; border-radius: 5px;
+      border: 1px solid #D6E4ED; color: #888;
+    }
+    .s-lang span.act { background: #2E86AB; border-color: #2E86AB; color: #fff; }
+    .s-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 0.8rem;
+    }
+    .s-header h3 { font-size: 1.05rem; font-weight: 700; color: #1A3A4A; margin: 0; }
+    .s-count {
+      font-size: 0.72rem; font-weight: 600; color: #888;
+      background: #EBF5FB; padding: 0.15rem 0.5rem; border-radius: 8px;
+    }
+    .s-card {
+      display: flex; background: #fff; border: 1px solid #D6E4ED;
+      border-radius: 10px; overflow: hidden; margin-bottom: 0.6rem;
+    }
+    .s-risk { width: 4px; flex-shrink: 0; }
+    .s-card-body { flex: 1; padding: 0.6rem 0.75rem; }
+    .s-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem; }
+    .s-card-name { font-size: 0.88rem; font-weight: 700; color: #1A3A4A; }
+    .s-card-id { font-size: 0.62rem; color: #B0BEC5; display: block; }
+    .s-cobb {
+      font-size: 0.62rem; font-weight: 700; color: #fff; padding: 0.12rem 0.4rem;
+      border-radius: 6px; flex-shrink: 0;
+    }
+    .s-tags { display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+    .s-tag {
+      font-size: 0.62rem; color: #636E72; background: #F0F4F8;
+      padding: 0.1rem 0.4rem; border-radius: 4px;
+    }
+    .s-tag.plan { color: #2E86AB; background: #EBF5FB; font-weight: 600; }
+    .s-kpi-row { display: flex; justify-content: space-between; font-size: 0.62rem; color: #888; margin-bottom: 0.15rem; }
+    .s-kpi-bar { height: 3px; background: #E8EEF2; border-radius: 2px; overflow: hidden; margin-bottom: 0.35rem; }
+    .s-kpi-fill { height: 100%; border-radius: 2px; }
+    .s-actions { display: flex; gap: 0.3rem; align-items: center; }
+    .s-btn-detail {
+      font-size: 0.65rem; font-weight: 600; padding: 0.25rem 0.6rem;
+      border: none; border-radius: 6px; background: #2E86AB; color: #fff;
+    }
+    .s-btn-del {
+      font-size: 0.6rem; width: 22px; height: 22px; border: none;
+      border-radius: 50%; background: none; color: #B0BEC5;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .s-btn-primary {
+      display: block; width: 100%; padding: 0.6rem; font-size: 0.85rem;
+      font-weight: 600; background: #2E86AB; color: #fff; border: none;
+      border-radius: 10px; text-align: center; margin-top: 0.5rem;
+    }
+    .s-btn-secondary {
+      display: inline-block; padding: 0.5rem 1.2rem; font-size: 0.8rem;
+      font-weight: 600; border: 2px solid #2E86AB; color: #2E86AB;
+      background: #fff; border-radius: 10px; text-align: center;
+    }
+    .s-btn-back { font-size: 0.78rem; color: #888; background: none; border: none; }
+
+    /* Progress bar */
+    .s-progress { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .s-progress-bar { flex: 1; height: 4px; background: #D6E4ED; border-radius: 2px; overflow: hidden; }
+    .s-progress-fill { height: 100%; background: #2E86AB; border-radius: 2px; }
+    .s-progress-text { font-size: 0.72rem; color: #888; font-weight: 600; }
+
+    /* Form elements */
+    .s-form-group { margin-bottom: 0.65rem; }
+    .s-form-label { font-size: 0.75rem; font-weight: 600; color: #444; margin-bottom: 0.25rem; display: block; }
+    .s-form-input {
+      width: 100%; padding: 0.45rem 0.6rem; font-size: 0.82rem;
+      border: 2px solid #D6E4ED; border-radius: 8px; background: #fff; color: #2D3436;
+    }
+    .s-form-input:focus { border-color: #2E86AB; outline: none; }
+
+    /* Option button */
+    .s-option {
+      display: flex; flex-direction: column; background: #fff; border: 2px solid #D6E4ED;
+      border-radius: 10px; padding: 0.6rem 0.8rem; margin-bottom: 0.4rem;
+    }
+    .s-option.sel { border-color: #2E86AB; background: #EBF5FB; }
+    .s-option .opt-title { font-size: 0.82rem; font-weight: 600; color: #1A3A4A; }
+    .s-option .opt-desc { font-size: 0.7rem; color: #636E72; margin-top: 0.1rem; }
+
+    /* Gender toggle */
+    .s-gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .s-gender-grid .s-option { align-items: center; text-align: center; margin: 0; }
+
+    /* Slider mock */
+    .s-slider-wrap { text-align: center; margin-bottom: 0.5rem; }
+    .s-slider-val { font-size: 1.6rem; font-weight: 700; color: #1A3A4A; }
+    .s-slider-label { font-size: 0.7rem; color: #888; margin-bottom: 0.4rem; }
+    .s-slider-track {
+      width: 100%; height: 6px; border-radius: 3px; position: relative;
+      background: linear-gradient(to right, #4CAF50 0%, #4CAF50 21%, #FF9800 21%, #FF9800 43%, #E53935 43%, #E53935 71%, #B71C1C 71%);
+    }
+    .s-slider-thumb {
+      width: 18px; height: 18px; border-radius: 50%; background: #2E86AB;
+      border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      position: absolute; top: -6px;
+    }
+
+    /* Summary table */
+    .s-summary {
+      background: #fff; border: 1px solid #D6E4ED; border-radius: 10px;
+      padding: 0.75rem; margin-bottom: 0.5rem;
+    }
+    .s-summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.3rem 0; border-bottom: 1px solid #F0F4F8; font-size: 0.75rem;
+    }
+    .s-summary-row:last-child { border-bottom: none; }
+    .s-summary-label { color: #888; }
+    .s-summary-value { font-weight: 600; color: #1A3A4A; }
+    .s-summary-edit { color: #2E86AB; font-size: 0.68rem; }
+
+    /* Timeline mock */
+    .s-timeline {
+      background: #fff; border: 1px solid #D6E4ED; border-radius: 10px;
+      padding: 0.75rem; margin-bottom: 0.5rem;
+    }
+    .s-tl-bar { display: flex; height: 18px; border-radius: 3px; overflow: hidden; margin: 0.6rem 0; }
+    .s-tl-bar div { display: flex; align-items: center; justify-content: center; font-size: 0.55rem; color: #fff; font-weight: 600; }
+    .s-tl-legend { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .s-tl-legend span { display: flex; align-items: center; gap: 0.2rem; font-size: 0.6rem; color: #666; }
+    .s-tl-legend .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* Phase accordion mock */
+    .s-phase {
+      background: #fff; border: 1px solid #D6E4ED; border-radius: 10px;
+      overflow: hidden; margin-bottom: 0.4rem;
+    }
+    .s-phase-header {
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.8rem;
+      font-size: 0.82rem; font-weight: 600; color: #1A3A4A;
+    }
+    .s-phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .s-phase-period { font-size: 0.65rem; font-weight: 400; color: #888; }
+    .s-phase-arrow { margin-left: auto; font-size: 0.55rem; color: #888; }
+    .s-phase-body { padding: 0 0.8rem 0.8rem; }
+    .s-phase-sub { font-size: 0.75rem; font-weight: 600; color: #2E86AB; margin: 0.5rem 0 0.3rem; padding-bottom: 0.15rem; border-bottom: 1px solid #EBF5FB; }
+
+    /* Exercise card mock */
+    .s-ex {
+      border: 1px solid #E8EEF2; border-radius: 8px; overflow: hidden; margin-bottom: 0.3rem;
+    }
+    .s-ex-header {
+      display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.6rem;
+      font-size: 0.75rem;
+    }
+    .s-ex-tag {
+      font-size: 0.55rem; font-weight: 600; padding: 0.1rem 0.35rem;
+      border-radius: 3px; color: #fff; flex-shrink: 0;
+    }
+    .s-ex-name { font-weight: 600; color: #1A3A4A; }
+    .s-ex-arrow { margin-left: auto; font-size: 0.5rem; color: #aaa; }
+
+    /* KPI grid */
+    .s-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .s-kpi-card {
+      background: #fff; border: 1px solid #D6E4ED; border-radius: 8px;
+      padding: 0.5rem; text-align: center;
+    }
+    .s-kpi-card .val { font-size: 1.1rem; font-weight: 700; }
+    .s-kpi-card .lbl { font-size: 0.6rem; color: #888; margin-top: 0.1rem; }
+
+    /* Checkbox mock */
+    .s-check-item {
+      display: flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0;
+      border-bottom: 1px solid #F0F4F8; font-size: 0.75rem;
+    }
+    .s-checkbox {
+      width: 14px; height: 14px; border: 2px solid #B0BEC5; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center; font-size: 0.55rem; flex-shrink: 0;
+    }
+    .s-checkbox.checked { background: #2E86AB; border-color: #2E86AB; color: #fff; }
+
+    /* Callout */
+    .callout {
+      display: flex; gap: 0.6rem; margin: 0.75rem 0;
+      padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.85rem;
+    }
+    .callout.info { background: #EBF5FB; border: 1px solid #B3D9ED; }
+    .callout.warn { background: #FFF3E0; border: 1px solid #FFCC80; }
+    .callout.tip  { background: #E8F5E9; border: 1px solid #A5D6A7; }
+    .callout .icon { font-size: 1.1rem; flex-shrink: 0; }
+    .callout p { margin: 0; line-height: 1.5; }
+
+    /* Annotation numbers */
+    .anno {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #E53935; color: #fff; font-size: 0.65rem; font-weight: 700;
+      flex-shrink: 0; position: relative;
+    }
+    .anno-list { margin-top: 0.75rem; }
+    .anno-list li {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      margin-bottom: 0.4rem; font-size: 0.82rem;
+    }
+
+    /* Nav diagram */
+    .nav-diagram {
+      background: #F5F9FC; border: 1px solid #D6E4ED; border-radius: 14px;
+      padding: 1.25rem; font-family: monospace; font-size: 0.78rem;
+      line-height: 1.8; color: #444; overflow-x: auto; white-space: pre;
+    }
+
+    /* Footer */
+    .manual-footer {
+      text-align: center; padding: 2rem 1rem; border-top: 1px solid #D6E4ED;
+      margin-top: 3rem;
+    }
+    .manual-footer p { font-size: 0.75rem; color: #999; }
+
+    /* Print */
+    @media print {
+      .manual-hero { padding: 1.5rem; }
+      .screen-wrap { break-inside: avoid; box-shadow: none; }
+      .section { break-inside: avoid; }
+      body { font-size: 10pt; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="manual-hero">
+  <h1>取扱説明書</h1>
+  <div class="sub">側弯症リハビリプログラムジェネレーター v2.0</div>
+  <div class="ver">Scoliosis Rehabilitation Program Generator</div>
+</div>
+
+<div class="manual-body">
+
+<!-- TOC -->
+<div class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#overview">概要</a></li>
+    <li><a href="#screen-intro">スタート画面</a></li>
+    <li><a href="#screen-wizard">患者登録ウィザード（6ステップ）</a></li>
+    <li><a href="#screen-dashboard">ダッシュボード（患者一覧）</a></li>
+    <li><a href="#screen-detail">患者詳細画面</a></li>
+    <li><a href="#screen-plan">プラン表示画面</a></li>
+    <li><a href="#screen-progress">セッション記録画面</a></li>
+    <li><a href="#nav-flow">画面遷移図</a></li>
+    <li><a href="#faq">よくある質問</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="overview">
+  <h2>1. 概要</h2>
+  <p>側弯症（脊柱側弯症）患者のための、SOSORT 2016ガイドライン準拠の運動療法プログラムを自動生成するWebアプリケーションです。</p>
+
+  <h3>主な機能</h3>
+  <ul>
+    <li><strong>102種のエクササイズ</strong> — Schroth法・SEAS・Lyon法など17手技から選択</li>
+    <li><strong>4つのプランテンプレート</strong> — 治療哲学に応じたPlan A/B/C/D同時生成</li>
+    <li><strong>最大10名の患者管理</strong> — ブラウザ内保存（localStorage）</li>
+    <li><strong>KPI追跡</strong> — アドヒアランス率、エクササイズ完遂率、Cobb角推移</li>
+    <li><strong>3言語対応</strong> — 日本語・简体中文・繁體中文</li>
+    <li><strong>印刷対応</strong> — プランをA4印刷して患者に配布可能</li>
+  </ul>
+
+  <div class="callout warn">
+    <span class="icon">&#9888;</span>
+    <p>本ツールは<strong>教育・デモ目的</strong>です。実際の治療は必ず側弯症専門の医師・理学療法士の指導のもとで行ってください。</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="screen-intro">
+  <h2>2. スタート画面</h2>
+  <p>アプリを初めて開いた時、または患者データがない時に表示されます。</p>
+
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">側弯症リハビリプログラムジェネレーター</span>
+    </div>
+    <div class="screen-body" style="text-align:center; padding: 1.5rem 1.25rem;">
+      <div class="s-lang">
+        <span class="act">日本語</span><span>简体中文</span><span>繁體中文</span>
+      </div>
+      <div style="font-size:2.5rem; margin-bottom:0.5rem;">&#x1F9B4;</div>
+      <div style="font-size:1.15rem; font-weight:700; color:#1A3A4A; margin-bottom:0.4rem; line-height:1.4;">側弯症リハビリプログラム<br>ジェネレーター</div>
+      <div style="font-size:0.78rem; color:#636E72; margin-bottom:1rem; line-height:1.6;">患者情報を入力すると、Schroth法・SEASを中心とした<br>最大36ヶ月間のフェーズ別運動療法プログラムを<br>自動生成します。</div>
+      <div style="background:#fff; border:1px solid #D6E4ED; border-radius:10px; padding:0.75rem; text-align:left; margin-bottom:1rem;">
+        <div style="font-size:0.75rem; color:#444; padding:0.2rem 0 0.2rem 1.2rem; position:relative; line-height:1.4;">
+          <span style="position:absolute; left:0; color:#2E86AB; font-weight:700;">&#10003;</span>
+          SOSORT 2016ガイドライン準拠のリスク分類
+        </div>
+        <div style="font-size:0.75rem; color:#444; padding:0.2rem 0 0.2rem 1.2rem; position:relative; line-height:1.4;">
+          <span style="position:absolute; left:0; color:#2E86AB; font-weight:700;">&#10003;</span>
+          100種以上のエビデンスベース運動メニュー
+        </div>
+        <div style="font-size:0.75rem; color:#444; padding:0.2rem 0 0.2rem 1.2rem; position:relative; line-height:1.4;">
+          <span style="position:absolute; left:0; color:#2E86AB; font-weight:700;">&#10003;</span>
+          フェーズ別タイムライン表示
+        </div>
+      </div>
+      <div style="display:inline-block; background:#2E86AB; color:#fff; padding:0.6rem 2rem; border-radius:10px; font-weight:600; font-size:0.92rem;">
+        <span class="anno" style="position:absolute; margin-left:5.5rem; margin-top:-0.8rem;">1</span>
+        はじめる
+      </div>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span>「はじめる」ボタンをタップすると、患者登録ウィザードへ進みます。</li>
+  </ol>
+
+  <div class="callout tip">
+    <span class="icon">&#128161;</span>
+    <p>右上の言語ボタンで、いつでも <strong>日本語</strong>・<strong>简体中文</strong>・<strong>繁體中文</strong> に切り替えられます。</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="screen-wizard">
+  <h2>3. 患者登録ウィザード（6ステップ）</h2>
+  <p>6つのステップで患者情報を入力し、4つのプランを自動生成します。画面上部のプログレスバーで進捗を確認できます。</p>
+
+  <!-- Step 0 -->
+  <h3>Step 1 — 基本情報</h3>
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">基本情報</span>
+    </div>
+    <div class="screen-body">
+      <div class="s-progress">
+        <div class="s-progress-bar"><div class="s-progress-fill" style="width:16%"></div></div>
+        <span class="s-progress-text">1/6</span>
+      </div>
+      <div style="font-size:1.05rem; font-weight:700; color:#1A3A4A; margin-bottom:0.15rem;">基本情報</div>
+      <div style="font-size:0.75rem; color:#636E72; margin-bottom:0.75rem;">患者の名前・年齢と性別を入力してください。</div>
+      <div class="s-form-group">
+        <span class="s-form-label">患者名 <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">1</span></span>
+        <input class="s-form-input" value="山田 花子" readonly>
+      </div>
+      <div class="s-form-group">
+        <span class="s-form-label">年齢 <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">2</span></span>
+        <input class="s-form-input" value="14" readonly style="width:80px;">
+      </div>
+      <div class="s-form-group">
+        <span class="s-form-label">性別 <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">3</span></span>
+        <div class="s-gender-grid">
+          <div class="s-option sel"><span class="opt-title">女性</span></div>
+          <div class="s-option"><span class="opt-title">男性</span></div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+        <span class="s-btn-primary" style="width:auto; display:inline-block; padding:0.5rem 1.5rem;">
+          次へ &#8594; <span class="anno" style="width:16px;height:16px;font-size:0.55rem;position:absolute;margin-left:0.3rem;margin-top:-0.6rem;">4</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span>患者名を入力（任意）。管理用の識別名です。</li>
+    <li><span class="anno">2</span>年齢を入力（5〜80歳）。骨成熟度の判定に使用。</li>
+    <li><span class="anno">3</span>性別を選択。側弯症の進行リスク判定に影響します。</li>
+    <li><span class="anno">4</span>全項目入力後、「次へ」で次のステップに進みます。</li>
+  </ol>
+
+  <!-- Step 1 -->
+  <h3>Step 2 — プログラム期間</h3>
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">プログラム期間</span>
+    </div>
+    <div class="screen-body">
+      <div class="s-progress">
+        <div class="s-progress-bar"><div class="s-progress-fill" style="width:33%"></div></div>
+        <span class="s-progress-text">2/6</span>
+      </div>
+      <div style="font-size:1.05rem; font-weight:700; color:#1A3A4A; margin-bottom:0.15rem;">プログラム期間</div>
+      <div style="font-size:0.75rem; color:#636E72; margin-bottom:0.75rem;">プログラムの期間を選択してください。</div>
+      <div class="s-option" style="padding-left:4.5rem; position:relative;">
+        <span style="position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); font-size:0.9rem; font-weight:700; color:#2E86AB;">6ヶ月</span>
+        <span class="opt-title">短期プログラム</span>
+        <span class="opt-desc">基礎構築に集中</span>
+      </div>
+      <div class="s-option sel" style="padding-left:4.5rem; position:relative;">
+        <span style="position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); font-size:0.9rem; font-weight:700; color:#2E86AB;">18ヶ月</span>
+        <span class="opt-title">中期プログラム</span>
+        <span class="opt-desc">基礎＋強化＋統合</span>
+      </div>
+      <div class="s-option" style="padding-left:4.5rem; position:relative;">
+        <span style="position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); font-size:0.9rem; font-weight:700; color:#2E86AB;">36ヶ月</span>
+        <span class="opt-title">長期プログラム</span>
+        <span class="opt-desc">フルコースの包括的リハビリ</span>
+      </div>
+    </div>
+  </div>
+
+  <p>期間によりフェーズ分けが変わります。長期ほどフェーズが多く段階的に進みます。</p>
+
+  <!-- Step 2 -->
+  <h3>Step 3 — カーブ情報</h3>
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">カーブ情報</span>
+    </div>
+    <div class="screen-body">
+      <div class="s-progress">
+        <div class="s-progress-bar"><div class="s-progress-fill" style="width:50%"></div></div>
+        <span class="s-progress-text">3/6</span>
+      </div>
+      <div style="font-size:1.05rem; font-weight:700; color:#1A3A4A; margin-bottom:0.15rem;">カーブ情報</div>
+      <div style="font-size:0.75rem; color:#636E72; margin-bottom:0.75rem;">Cobb角とカーブタイプを設定してください。</div>
+
+      <div class="s-form-group">
+        <span class="s-form-label">Cobb角 <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">1</span></span>
+        <div class="s-slider-wrap">
+          <div class="s-slider-val">25&deg;</div>
+          <div class="s-slider-label">中等度</div>
+          <div class="s-slider-track" style="margin:0 auto; width:90%;">
+            <div class="s-slider-thumb" style="left:22%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-form-group">
+        <span class="s-form-label">カーブタイプ <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">2</span></span>
+        <div class="s-option sel"><span class="opt-title">胸椎カーブ</span></div>
+        <div class="s-option"><span class="opt-title">胸腰椎カーブ</span></div>
+        <div class="s-option"><span class="opt-title">腰椎カーブ</span></div>
+        <div class="s-option"><span class="opt-title">ダブルカーブ（S字型）</span></div>
+      </div>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span>スライダーでCobb角（10〜70&deg;）を設定。色が重症度を表します。<br>
+      <span style="display:inline-block; width:10px; height:10px; background:#4CAF50; border-radius:2px;"></span> 軽度(10-25&deg;)
+      <span style="display:inline-block; width:10px; height:10px; background:#FF9800; border-radius:2px; margin-left:0.5rem;"></span> 中等度(25-40&deg;)
+      <span style="display:inline-block; width:10px; height:10px; background:#E53935; border-radius:2px; margin-left:0.5rem;"></span> 重度(40-50&deg;)
+      <span style="display:inline-block; width:10px; height:10px; background:#B71C1C; border-radius:2px; margin-left:0.5rem;"></span> 最重度(50&deg;+)
+    </li>
+    <li><span class="anno">2</span>カーブの部位を選択。エクササイズの選定に影響します。</li>
+  </ol>
+
+  <!-- Step 3 -->
+  <h3>Step 4 — 骨成熟度・治療状況</h3>
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">骨成熟度・治療状況</span>
+    </div>
+    <div class="screen-body">
+      <div style="font-size:0.75rem; color:#636E72; margin-bottom:0.75rem;">Risserサインと治療歴を選択してください。</div>
+      <div class="s-form-group">
+        <span class="s-form-label">Risserサイン（18歳未満のみ）</span>
+        <div style="display:flex; gap:0.3rem;">
+          <div style="width:36px; height:36px; border:2px solid #D6E4ED; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; color:#1A3A4A;">0</div>
+          <div style="width:36px; height:36px; border:2px solid #2E86AB; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; background:#2E86AB; color:#fff;">1</div>
+          <div style="width:36px; height:36px; border:2px solid #D6E4ED; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; color:#1A3A4A;">2</div>
+          <div style="width:36px; height:36px; border:2px solid #D6E4ED; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; color:#1A3A4A;">3</div>
+          <div style="width:36px; height:36px; border:2px solid #D6E4ED; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; color:#1A3A4A;">4</div>
+          <div style="width:36px; height:36px; border:2px solid #D6E4ED; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; color:#1A3A4A;">5</div>
+        </div>
+        <div style="font-size:0.68rem; color:#888; margin-top:0.3rem;">0: 未骨化 | 1-3: 骨化進行中 | 4-5: 骨化完了</div>
+      </div>
+      <div class="s-form-group">
+        <span class="s-form-label">治療状況</span>
+        <div class="s-option sel" style="flex-direction:row; gap:0.5rem; align-items:center;">
+          <div class="s-checkbox checked">&#10003;</div>
+          <span class="opt-title">運動療法</span>
+        </div>
+        <div class="s-option" style="flex-direction:row; gap:0.5rem; align-items:center;">
+          <div class="s-checkbox"></div>
+          <span class="opt-title">装具療法</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p>Risserサイン（0〜5）は骨盤の骨化度を示し、成長残余の判定に使われます。18歳以上では省略されます。</p>
+
+  <!-- Step 4 -->
+  <h3>Step 5 — 合併症</h3>
+  <p>腰背部痛、呼吸機能低下、外見の変化、心理的ストレスなどの合併症を選択します。複数選択可。選択した項目に応じてプログラム内容が調整されます。</p>
+
+  <!-- Step 5 -->
+  <h3>Step 6 — 入力内容の確認</h3>
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">入力内容の確認</span>
+    </div>
+    <div class="screen-body">
+      <div class="s-progress">
+        <div class="s-progress-bar"><div class="s-progress-fill" style="width:100%"></div></div>
+        <span class="s-progress-text">6/6</span>
+      </div>
+      <div style="font-size:1.05rem; font-weight:700; color:#1A3A4A; margin-bottom:0.5rem;">入力内容の確認</div>
+
+      <div class="s-summary">
+        <div class="s-summary-row">
+          <span class="s-summary-label">患者名</span>
+          <span class="s-summary-value">山田 花子</span>
+          <span class="s-summary-edit">編集</span>
+        </div>
+        <div class="s-summary-row">
+          <span class="s-summary-label">年齢</span>
+          <span class="s-summary-value">14歳</span>
+          <span class="s-summary-edit">編集</span>
+        </div>
+        <div class="s-summary-row">
+          <span class="s-summary-label">Cobb角</span>
+          <span class="s-summary-value">25&deg;</span>
+          <span class="s-summary-edit">編集</span>
+        </div>
+        <div class="s-summary-row">
+          <span class="s-summary-label">カーブタイプ</span>
+          <span class="s-summary-value">胸椎カーブ</span>
+          <span class="s-summary-edit">編集</span>
+        </div>
+        <div class="s-summary-row">
+          <span class="s-summary-label">プログラム期間</span>
+          <span class="s-summary-value">18ヶ月</span>
+          <span class="s-summary-edit">編集</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <span class="s-btn-primary" style="display:inline-block; width:auto; padding:0.6rem 2rem;">
+          <span class="anno" style="width:16px;height:16px;font-size:0.55rem;position:absolute;margin-left:-1.8rem;margin-top:-0.6rem;">1</span>
+          プログラムを生成
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span>「プログラムを生成」をタップすると、4つのプラン（Plan A〜D）が同時に生成され、患者データが保存されます。各行の「編集」で前のステップに戻れます。</li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="screen-dashboard">
+  <h2>4. ダッシュボード（患者一覧）</h2>
+  <p>患者が登録されると、ダッシュボードにカード一覧が表示されます。最大10名まで管理できます。</p>
+
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">ダッシュボード</span>
+    </div>
+    <div class="screen-body">
+      <div class="s-lang">
+        <span class="act">日本語</span><span>简体中文</span><span>繁體中文</span>
+      </div>
+      <div class="s-header">
+        <h3>患者一覧</h3>
+        <span class="s-count">2/10</span>
+      </div>
+
+      <!-- Card 1 -->
+      <div class="s-card">
+        <div class="s-risk" style="background:#FF9800;"></div>
+        <div class="s-card-body">
+          <div class="s-card-top">
+            <div>
+              <span class="s-card-name">山田 花子 <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:0.2rem;margin-top:-0.3rem;">1</span></span>
+              <span class="s-card-id">P001</span>
+            </div>
+            <span class="s-cobb" style="background:#FF9800;">25&deg; <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:0.2rem;margin-top:-0.5rem;">2</span></span>
+          </div>
+          <div class="s-tags">
+            <span class="s-tag">14歳</span>
+            <span class="s-tag">女性</span>
+            <span class="s-tag">胸椎カーブ</span>
+            <span class="s-tag plan">Plan A <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:0.2rem;margin-top:-0.5rem;">3</span></span>
+          </div>
+          <div class="s-kpi-row">
+            <span>アドヒアランス</span>
+            <span style="font-weight:600; color:#1A3A4A;">75%</span>
+          </div>
+          <div class="s-kpi-bar"><div class="s-kpi-fill" style="width:75%; background:#FF9800;"></div></div>
+          <div class="s-actions">
+            <span class="s-btn-detail"><span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:1.5rem;margin-top:-0.6rem;">5</span>詳細</span>
+            <span class="s-btn-del"><span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:0.4rem;margin-top:-0.6rem;">6</span>&#10005;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="s-card">
+        <div class="s-risk" style="background:#4CAF50;"></div>
+        <div class="s-card-body">
+          <div class="s-card-top">
+            <div>
+              <span class="s-card-name">鈴木 太郎</span>
+              <span class="s-card-id">P002</span>
+            </div>
+            <span class="s-cobb" style="background:#4CAF50;">18&deg;</span>
+          </div>
+          <div class="s-tags">
+            <span class="s-tag">12歳</span>
+            <span class="s-tag">男性</span>
+            <span class="s-tag">腰椎カーブ</span>
+            <span class="s-tag plan">Plan B</span>
+          </div>
+          <div class="s-kpi-row"><span>アドヒアランス</span><span style="font-weight:600; color:#1A3A4A;">0%</span></div>
+          <div class="s-kpi-bar"><div class="s-kpi-fill" style="width:0%;"></div></div>
+          <div class="s-actions">
+            <span class="s-btn-detail">詳細</span>
+            <span class="s-btn-del">&#10005;</span>
+          </div>
+        </div>
+      </div>
+
+      <span class="s-btn-primary" style="margin-top:0.4rem;">
+        <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:6rem;margin-top:-0.6rem;">7</span>
+        + 新規患者を追加
+      </span>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span><strong>患者名</strong> — 大きく表示。カード全体をタップしても詳細に遷移します。</li>
+    <li><span class="anno">2</span><strong>Cobb角バッジ</strong> — 重症度に応じた色で現在のCobb角を表示。</li>
+    <li><span class="anno">3</span><strong>Plan バッジ</strong> — 現在アクティブなプランを表示（A/B/C/D）。</li>
+    <li style="display:flex; align-items:flex-start; gap:0.5rem;">
+      <span class="anno" style="width:auto; padding:0 0.4rem; min-width:20px;">色</span>
+      <span><strong>左端のリスク色帯</strong> — 一目でリスクレベルが分かります。<br>
+        <span style="display:inline-block; width:10px; height:10px; background:#4CAF50; border-radius:2px;"></span> 低リスク
+        <span style="display:inline-block; width:10px; height:10px; background:#FF9800; border-radius:2px; margin-left:0.5rem;"></span> 中リスク
+        <span style="display:inline-block; width:10px; height:10px; background:#E53935; border-radius:2px; margin-left:0.5rem;"></span> 高リスク
+      </span>
+    </li>
+    <li><span class="anno">5</span><strong>「詳細」ボタン</strong> — 患者詳細画面に遷移。</li>
+    <li><span class="anno">6</span><strong>「&#10005;」ボタン</strong> — 患者データを削除（確認ダイアログあり）。</li>
+    <li><span class="anno">7</span><strong>「新規患者を追加」</strong> — ウィザードを開始して新しい患者を登録。</li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="screen-detail">
+  <h2>5. 患者詳細画面</h2>
+  <p>患者の基本情報、KPIダッシュボード、Cobb角推移、4つのプランを一覧で確認できます。</p>
+
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">患者詳細</span>
+    </div>
+    <div class="screen-body">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+        <span class="s-btn-back">&larr; 戻る</span>
+        <span style="font-size:1rem; font-weight:700; color:#1A3A4A;">山田 花子</span>
+      </div>
+
+      <!-- Demographics -->
+      <div style="background:#fff; border:1px solid #D6E4ED; border-radius:10px; padding:0.75rem; margin-bottom:0.75rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.4rem; text-align:center;">
+          <div><div style="font-size:0.6rem; color:#888;">年齢</div><div style="font-size:0.8rem; font-weight:600; color:#1A3A4A;">14歳</div></div>
+          <div><div style="font-size:0.6rem; color:#888;">性別</div><div style="font-size:0.8rem; font-weight:600; color:#1A3A4A;">女性</div></div>
+          <div><div style="font-size:0.6rem; color:#888;">Cobb角</div><div style="font-size:0.8rem; font-weight:600; color:#1A3A4A;">25&deg;</div></div>
+          <div><div style="font-size:0.6rem; color:#888;">カーブ</div><div style="font-size:0.8rem; font-weight:600; color:#1A3A4A;">胸椎</div></div>
+          <div><div style="font-size:0.6rem; color:#888;">Risser</div><div style="font-size:0.8rem; font-weight:600; color:#1A3A4A;">1</div></div>
+          <div><div style="font-size:0.6rem; color:#888;">期間</div><div style="font-size:0.8rem; font-weight:600; color:#1A3A4A;">18ヶ月</div></div>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div style="font-size:0.88rem; font-weight:700; color:#1A3A4A; margin-bottom:0.4rem;">
+        <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">1</span>
+        KPIダッシュボード (Plan A)
+      </div>
+      <div class="s-kpi-grid">
+        <div class="s-kpi-card"><div class="val" style="color:#FF9800;">75%</div><div class="lbl">アドヒアランス</div></div>
+        <div class="s-kpi-card"><div class="val" style="color:#4CAF50;">83%</div><div class="lbl">エクササイズ完遂率</div></div>
+        <div class="s-kpi-card"><div class="val" style="color:#2E86AB;">12</div><div class="lbl">セッション数</div></div>
+        <div class="s-kpi-card"><div class="val" style="color:#7E57C2;">1/3</div><div class="lbl">フェーズ進捗</div></div>
+      </div>
+
+      <!-- Plan grid -->
+      <div style="font-size:0.88rem; font-weight:700; color:#1A3A4A; margin:0.5rem 0 0.4rem;">
+        <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">2</span>
+        プラン一覧
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; margin-bottom:0.5rem;">
+        <div style="background:#EBF5FB; border:2px solid #2E86AB; border-radius:10px; padding:0.5rem 0.6rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:700; font-size:0.78rem;">Plan A</span><span style="font-size:0.55rem; color:#FF9800; font-weight:600;">&#9733; Active</span></div>
+          <div style="font-size:0.68rem; font-weight:600; color:#2E86AB;">Schroth重点</div>
+          <div style="font-size:0.6rem; color:#888;">伝統的集中型</div>
+        </div>
+        <div style="background:#fff; border:2px solid #D6E4ED; border-radius:10px; padding:0.5rem 0.6rem;">
+          <div style="font-weight:700; font-size:0.78rem;">Plan B</div>
+          <div style="font-size:0.68rem; font-weight:600; color:#2E86AB;">SEAS機能統合</div>
+          <div style="font-size:0.6rem; color:#888;">自主トレ重視</div>
+        </div>
+        <div style="background:#fff; border:2px solid #D6E4ED; border-radius:10px; padding:0.5rem 0.6rem;">
+          <div style="font-weight:700; font-size:0.78rem;">Plan C</div>
+          <div style="font-size:0.68rem; font-weight:600; color:#2E86AB;">運動統合</div>
+          <div style="font-size:0.6rem; color:#888;">患者フレンドリー</div>
+        </div>
+        <div style="background:#fff; border:2px solid #D6E4ED; border-radius:10px; padding:0.5rem 0.6rem;">
+          <div style="font-weight:700; font-size:0.78rem;">Plan D</div>
+          <div style="font-size:0.68rem; font-weight:600; color:#2E86AB;">包括マルチモーダル</div>
+          <div style="font-size:0.6rem; color:#888;">全手技バランス</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+        <span class="s-btn-primary" style="display:inline-block; width:auto; padding:0.4rem 1rem; font-size:0.78rem;">
+          <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:3.5rem;margin-top:-0.5rem;">3</span>
+          セッション記録
+        </span>
+        <span class="s-btn-secondary" style="font-size:0.78rem; padding:0.4rem 1rem;">
+          <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:4rem;margin-top:-0.5rem;">4</span>
+          プログラム再生成
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span><strong>KPIダッシュボード</strong> — アドヒアランス率、エクササイズ完遂率、セッション数、フェーズ進捗の4指標。</li>
+    <li><span class="anno">2</span><strong>プラン一覧</strong> — Plan A〜Dのカードをタップするとプラン詳細を表示。青枠がアクティブプラン。</li>
+    <li><span class="anno">3</span><strong>セッション記録</strong> — エクササイズの実施記録を入力。</li>
+    <li><span class="anno">4</span><strong>プログラム再生成</strong> — 患者情報を編集して4プランを再作成。</li>
+  </ol>
+
+  <h3>4つのプランの違い</h3>
+  <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:0.5rem;">
+    <thead>
+      <tr style="background:#F5F9FC;">
+        <th style="padding:0.5rem; text-align:left; border-bottom:2px solid #D6E4ED;">プラン</th>
+        <th style="padding:0.5rem; text-align:left; border-bottom:2px solid #D6E4ED;">方針</th>
+        <th style="padding:0.5rem; text-align:left; border-bottom:2px solid #D6E4ED;">向いている方</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8; font-weight:600; color:#2E86AB;">Plan A</td><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8;">Schroth重点</td><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8;">通院頻度を確保でき、専門指導を受けられる方</td></tr>
+      <tr><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8; font-weight:600; color:#2E86AB;">Plan B</td><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8;">SEAS機能統合</td><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8;">自宅での自主トレーニングを中心にしたい方</td></tr>
+      <tr><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8; font-weight:600; color:#2E86AB;">Plan C</td><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8;">運動統合</td><td style="padding:0.4rem; border-bottom:1px solid #F0F4F8;">ピラティスやヨガを取り入れたい方</td></tr>
+      <tr><td style="padding:0.4rem; font-weight:600; color:#2E86AB;">Plan D</td><td style="padding:0.4rem;">包括マルチモーダル</td><td style="padding:0.4rem;">水中療法・筋膜リリースなど多角的に取り組みたい方</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="screen-plan">
+  <h2>6. プラン表示画面</h2>
+  <p>選択したプランの詳細プログラム — タイムライン、フェーズ別エクササイズ、評価スケジュールなどを確認できます。</p>
+
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">プラン表示</span>
+    </div>
+    <div class="screen-body">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+        <span class="s-btn-back">&larr;</span>
+        <span style="font-size:1rem; font-weight:700; color:#1A3A4A;">山田 花子 — Plan A</span>
+      </div>
+
+      <!-- Plan tabs -->
+      <div style="display:flex; gap:0.25rem; margin-bottom:0.6rem;">
+        <div style="flex:1; padding:0.35rem; text-align:center; font-size:0.7rem; font-weight:600; border:2px solid #2E86AB; border-radius:8px; background:#2E86AB; color:#fff;">Plan A</div>
+        <div style="flex:1; padding:0.35rem; text-align:center; font-size:0.7rem; font-weight:600; border:2px solid #D6E4ED; border-radius:8px; color:#636E72;">Plan B</div>
+        <div style="flex:1; padding:0.35rem; text-align:center; font-size:0.7rem; font-weight:600; border:2px solid #D6E4ED; border-radius:8px; color:#636E72;">Plan C</div>
+        <div style="flex:1; padding:0.35rem; text-align:center; font-size:0.7rem; font-weight:600; border:2px solid #D6E4ED; border-radius:8px; color:#636E72;">Plan D</div>
+      </div>
+
+      <!-- Timeline -->
+      <div style="font-size:0.82rem; font-weight:700; color:#1A3A4A; margin-bottom:0.3rem;">
+        <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">1</span>
+        タイムライン
+      </div>
+      <div class="s-timeline">
+        <div style="display:flex; justify-content:space-between; font-size:0.55rem; color:#888; margin-bottom:0.15rem;">
+          <span>開始</span><span>6M</span><span>12M</span><span>18M</span>
+        </div>
+        <div class="s-tl-bar">
+          <div style="flex:6; background:#4CAF50;">基礎</div>
+          <div style="flex:6; background:#2E86AB;">強化</div>
+          <div style="flex:6; background:#7E57C2;">統合</div>
+        </div>
+        <div class="s-tl-legend">
+          <span><span class="dot" style="background:#2E86AB;"></span>評価</span>
+          <span><span class="dot" style="background:#E53935;"></span>X線</span>
+          <span><span class="dot" style="background:#7E57C2;"></span>マイルストーン</span>
+          <span><span class="dot" style="background:#FF5722;"></span>現在</span>
+        </div>
+      </div>
+
+      <!-- Phases -->
+      <div style="font-size:0.82rem; font-weight:700; color:#1A3A4A; margin:0.5rem 0 0.3rem;">
+        <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">2</span>
+        フェーズ詳細
+      </div>
+
+      <div class="s-phase">
+        <div class="s-phase-header">
+          <span class="s-phase-dot" style="background:#4CAF50;"></span>
+          Phase 1: 基礎構築期
+          <span class="s-phase-period">M1-M6</span>
+          <span class="s-phase-arrow">&#9660;</span>
+        </div>
+        <div class="s-phase-body">
+          <div class="s-phase-sub">通院エクササイズ（8種）</div>
+          <div class="s-ex">
+            <div class="s-ex-header">
+              <span class="s-ex-tag" style="background:#00897B;">Schroth</span>
+              <span class="s-ex-name">骨盤補正（基本姿勢）</span>
+              <span class="s-ex-arrow">&#9654;</span>
+            </div>
+          </div>
+          <div class="s-ex">
+            <div class="s-ex-header">
+              <span class="s-ex-tag" style="background:#1565C0;">SEAS</span>
+              <span class="s-ex-name">能動的自己矯正</span>
+              <span class="s-ex-arrow">&#9654;</span>
+            </div>
+          </div>
+          <div class="s-ex">
+            <div class="s-ex-header">
+              <span class="s-ex-tag" style="background:#6A1B9A;">Core</span>
+              <span class="s-ex-name">骨盤底筋群活性化</span>
+              <span class="s-ex-arrow">&#9654;</span>
+            </div>
+          </div>
+          <div style="font-size:0.65rem; color:#888; text-align:center; padding:0.2rem;">...他5種</div>
+        </div>
+      </div>
+
+      <div class="s-phase">
+        <div class="s-phase-header">
+          <span class="s-phase-dot" style="background:#2E86AB;"></span>
+          Phase 2: 強化期
+          <span class="s-phase-period">M7-M12</span>
+          <span class="s-phase-arrow">&#9654;</span>
+        </div>
+      </div>
+
+      <div class="s-phase">
+        <div class="s-phase-header">
+          <span class="s-phase-dot" style="background:#7E57C2;"></span>
+          Phase 3: 統合・維持期
+          <span class="s-phase-period">M13-M18</span>
+          <span class="s-phase-arrow">&#9654;</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex; gap:0.4rem; justify-content:center; margin-top:0.6rem; flex-wrap:wrap;">
+        <span class="s-btn-primary" style="display:inline-block; width:auto; padding:0.4rem 1rem; font-size:0.78rem;">
+          <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:3.5rem;margin-top:-0.5rem;">3</span>
+          セッション記録
+        </span>
+        <span class="s-btn-secondary" style="font-size:0.78rem; padding:0.35rem 1rem;">
+          <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:1rem;margin-top:-0.5rem;">4</span>
+          印刷
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span><strong>タイムライン</strong> — フェーズの色分けバー、評価ポイント(&#9679;)、X線評価(&#11044;)、マイルストーン(&#9654;)、現在位置を表示。</li>
+    <li><span class="anno">2</span><strong>フェーズ詳細</strong> — タップで展開/折りたたみ。各フェーズに通院・自主トレ・装具指導・評価スケジュールが含まれます。エクササイズカードもタップで手順を展開。</li>
+    <li><span class="anno">3</span><strong>セッション記録</strong> — このプランでの運動実施記録を入力。</li>
+    <li><span class="anno">4</span><strong>印刷</strong> — 全フェーズを展開してA4印刷。患者配布用。</li>
+  </ol>
+
+  <div class="callout info">
+    <span class="icon">&#128196;</span>
+    <p>Plan Aをアクティブにしている状態で他のPlanタブを見て「このプランをアクティブに」をタップすると、プラン変更ができます。変更理由の入力が求められ、履歴に記録されます。</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="screen-progress">
+  <h2>7. セッション記録画面</h2>
+  <p>通院時・自宅トレーニング時のエクササイズ実施を記録します。記録はKPIに自動反映されます。</p>
+
+  <div class="screen-wrap">
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="title">セッション記録</span>
+    </div>
+    <div class="screen-body">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+        <span class="s-btn-back">&larr;</span>
+        <span style="font-size:0.95rem; font-weight:700; color:#1A3A4A;">セッション記録</span>
+      </div>
+      <div style="font-size:0.72rem; color:#888; margin-bottom:0.6rem;">山田 花子 &#8212; Plan A</div>
+
+      <!-- Session info -->
+      <div style="background:#fff; border:1px solid #D6E4ED; border-radius:10px; padding:0.6rem; margin-bottom:0.5rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.4rem;">
+          <div>
+            <div style="font-size:0.6rem; color:#888; margin-bottom:0.15rem;">
+              <span class="anno" style="width:14px;height:14px;font-size:0.5rem;">1</span>
+              日付
+            </div>
+            <div style="padding:0.25rem 0.4rem; border:1px solid #D6E4ED; border-radius:6px; font-size:0.72rem;">2026/2/16</div>
+          </div>
+          <div>
+            <div style="font-size:0.6rem; color:#888; margin-bottom:0.15rem;">
+              <span class="anno" style="width:14px;height:14px;font-size:0.5rem;">2</span>
+              実施場所
+            </div>
+            <div style="padding:0.25rem 0.4rem; border:1px solid #D6E4ED; border-radius:6px; font-size:0.72rem;">通院</div>
+          </div>
+          <div>
+            <div style="font-size:0.6rem; color:#888; margin-bottom:0.15rem;">フェーズ</div>
+            <div style="display:inline-block; padding:0.15rem 0.4rem; border-radius:6px; font-size:0.68rem; font-weight:600; color:#fff; background:#4CAF50;">基礎構築期</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exercise checklist -->
+      <div style="background:#fff; border:1px solid #D6E4ED; border-radius:10px; padding:0.6rem; margin-bottom:0.5rem;">
+        <div style="font-size:0.82rem; font-weight:600; color:#1A3A4A; margin-bottom:0.4rem;">
+          <span class="anno" style="width:16px;height:16px;font-size:0.55rem;">3</span>
+          エクササイズ（8種）
+        </div>
+        <div class="s-check-item">
+          <div class="s-checkbox checked">&#10003;</div>
+          <span style="flex:1; color:#2D3436;">骨盤補正（基本姿勢）</span>
+          <span class="s-ex-tag" style="background:#00897B; font-size:0.5rem;">Schroth</span>
+        </div>
+        <div class="s-check-item">
+          <div class="s-checkbox checked">&#10003;</div>
+          <span style="flex:1; color:#2D3436;">能動的自己矯正</span>
+          <span class="s-ex-tag" style="background:#1565C0; font-size:0.5rem;">SEAS</span>
+        </div>
+        <div class="s-check-item">
+          <div class="s-checkbox"></div>
+          <span style="flex:1; color:#2D3436;">骨盤底筋群活性化</span>
+          <span class="s-ex-tag" style="background:#6A1B9A; font-size:0.5rem;">Core</span>
+        </div>
+        <div style="font-size:0.65rem; color:#888; text-align:center; padding:0.2rem;">...他5種</div>
+        <div style="display:flex; gap:0.3rem; margin-top:0.3rem; padding-top:0.3rem; border-top:1px solid #F0F4F8;">
+          <span style="font-size:0.65rem; color:#2E86AB; font-weight:600;">全選択</span>
+          <span style="font-size:0.65rem; color:#888;">全解除</span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div style="margin-bottom:0.5rem;">
+        <div style="font-size:0.75rem; font-weight:600; color:#444; margin-bottom:0.2rem;">
+          <span class="anno" style="width:14px;height:14px;font-size:0.5rem;">4</span>
+          メモ
+        </div>
+        <div style="width:100%; padding:0.4rem 0.6rem; border:1px solid #D6E4ED; border-radius:8px; font-size:0.72rem; color:#888; min-height:2.5rem;">セッションの様子をメモ...</div>
+      </div>
+
+      <!-- Save -->
+      <span class="s-btn-primary" style="margin:0;">
+        <span class="anno" style="width:14px;height:14px;font-size:0.5rem;position:absolute;margin-left:1rem;margin-top:-0.5rem;">5</span>
+        保存
+      </span>
+    </div>
+  </div>
+
+  <ol class="anno-list">
+    <li><span class="anno">1</span><strong>日付</strong> — デフォルトは今日。過去日も選択可能。</li>
+    <li><span class="anno">2</span><strong>実施場所</strong> — 「通院」「自宅」を選択。</li>
+    <li><span class="anno">3</span><strong>エクササイズチェック</strong> — 実施したエクササイズにチェック。「全選択」「全解除」で一括操作。</li>
+    <li><span class="anno">4</span><strong>メモ</strong> — セッション中の気づきや患者の反応を記録。</li>
+    <li><span class="anno">5</span><strong>保存</strong> — 記録を保存し、KPIに自動反映されます。</li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="nav-flow">
+  <h2>8. 画面遷移図</h2>
+  <p>各画面間の遷移の全体像です。</p>
+
+  <div class="nav-diagram">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;         &#128296; &#12454;&#12451;&#12470;&#12540;&#12489;          &#9474;
+&#9474;  Step 1 &#8594; 2 &#8594; 3 &#8594; 4 &#8594; 5 &#8594; 6  &#9474;
+&#9474;  (6&#12473;&#12486;&#12483;&#12503;&#12391;&#24773;&#22577;&#20837;&#21147;)      &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+         &#9474;                  &#9474;
+    &#12300;&#12399;&#12376;&#12417;&#12427;&#12301;       &#12300;&#24739;&#32773;&#35443;&#32048;&#12434;&#35211;&#12427;&#12301;
+    &#12300;+&#26032;&#35215;&#24739;&#32773;&#12301;       (&#23436;&#20102;&#24460;)
+         &#9474;                  &#9474;
+         &#9660;                  &#9660;
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;   &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; &#128100; &#12480;&#12483;&#12471;&#12517;&#12508;&#12540;&#12489; &#9474;   &#9474; &#128203; &#24739;&#32773;&#35443;&#32048;      &#9474;
+&#9474;  (&#24739;&#32773;&#19968;&#35239;)    &#9474;   &#9474;  KPI + &#12503;&#12521;&#12531;&#19968;&#35239; &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;   &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+        &#9474;                   &#9474;
+   &#12459;&#12540;&#12489;&#12479;&#12483;&#12503;         &#9484;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9488;
+        &#9474;             &#9474;          &#9474;
+        &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;  Plan&#12479;&#12502;  &#12475;&#12483;&#12471;&#12519;&#12531;
+                     &#9474;     &#9474;    &#35352;&#37682;
+                     &#9660;     &#9474;
+         &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+         &#9474; &#128203; &#12503;&#12521;&#12531;&#34920;&#31034;      &#9474; &#9474;
+         &#9474;  &#12479;&#12452;&#12512;&#12521;&#12452;&#12531;    &#9474; &#9474;
+         &#9474;  &#12501;&#12455;&#12540;&#12474;&#35443;&#32048;    &#9474; &#9474;
+         &#9474;  &#12456;&#12463;&#12469;&#12469;&#12452;&#12474;&#19968;&#35239;  &#9474; &#9474;
+         &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+                  &#9474;             &#9474;
+             &#12300;&#12475;&#12483;&#12471;&#12519;&#12531;&#35352;&#37682;&#12301; &#9474;
+                  &#9474;             &#9474;
+                  &#9660;             &#9474;
+         &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+         &#9474; &#9997; &#12475;&#12483;&#12471;&#12519;&#12531;&#35352;&#37682;  &#9500;&#9472;&#9496;
+         &#9474;  &#12481;&#12455;&#12483;&#12463;&#12522;&#12473;&#12488;  &#9474;
+         &#9474;  &#12513;&#12514; + &#20445;&#23384;     &#9474;
+         &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="faq">
+  <h2>9. よくある質問</h2>
+
+  <h3>Q. データはどこに保存されますか？</h3>
+  <p>ブラウザの<strong>localStorage</strong>に保存されます。サーバーには送信されません。ブラウザのデータを消去すると患者データも失われますのでご注意ください。</p>
+
+  <h3>Q. 最大何名まで管理できますか？</h3>
+  <p><strong>10名</strong>まで管理できます。上限に達した場合は、不要な患者を削除してから新規追加してください。</p>
+
+  <h3>Q. プランを途中で変更できますか？</h3>
+  <p>患者詳細画面でプランカードをタップし、別のプランの画面で「このプランをアクティブに」をタップします。変更理由を入力すると切り替えが記録されます。</p>
+
+  <h3>Q. 印刷するには？</h3>
+  <p>プラン表示画面の「印刷」ボタンをタップします。全フェーズが自動的に展開され、ブラウザの印刷ダイアログが開きます。</p>
+
+  <h3>Q. Cobb角が変化したら？</h3>
+  <p>患者詳細画面の「Cobb角を追加」ボタンで新しい値を記録できます。推移グラフに反映され、改善・悪化の傾向を追跡できます。</p>
+
+  <h3>Q. 対応ブラウザは？</h3>
+  <p>Chrome、Safari、Firefox、Edgeの最新版に対応しています。スマートフォンのブラウザでも使用可能です。</p>
+</div>
+
+<!-- Footer -->
+<div class="manual-footer">
+  <p>側弯症リハビリプログラムジェネレーター v2.0 取扱説明書<br>
+  SOSORT 2016ガイドライン準拠 | 102種エクササイズ | 4プランテンプレート<br>
+  &copy; 2026 NPO法人リハビリコラボレーション</p>
+</div>
+
+</div>
+</body>
+</html>
